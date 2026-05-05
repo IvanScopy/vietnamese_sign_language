@@ -1,196 +1,112 @@
-# 🎯 Vietnamese Sign Language (VSL) Communication Platform
+# Vietnamese Sign Language (VSL) Bridge
 
 ## What This Is
 
-A **bidirectional communication platform** connecting deaf and hearing individuals using **Vietnamese Sign Language (VSL)**. The system supports real-time sign language recognition, speech synthesis, 3D avatar signing, and video calling capabilities across Web and Mobile platforms.
+A bilingual communication and learning application that enables real-time two-way communication between deaf and hearing people using Vietnamese Sign Language (VSL). The app uses AI to recognize sign language gestures and convert them to speech/text, and converts speech to text with a 3D avatar signing the response. The platform serves deaf children, their parents, and hearing peers, with a focus on educational accessibility and emotional connection.
 
-**Core Value:** Enable seamless, real-time communication between deaf and hearing Vietnamese speakers through AI-powered sign language translation and 3D avatar visualization.
+## Core Value
 
----
+Enable deaf children and hearing people (parents, peers) to communicate and learn VSL together, bridging the communication gap through technology.
 
-## Users & Context
+## Requirements
 
-### Primary Users
-- **Deaf/Hard-of-hearing individuals** who use VSL as their primary communication method
-- **Hearing individuals** (doctors, teachers, family members, general public) who need to communicate with deaf users
+### Validated
 
-### Context of Use
-- **Healthcare:** Hospital/clinic visits, emergency situations
-- **Education:** Classroom settings, learning environments
-- **Daily life:** Home, public spaces, social interactions
-- **Learning:** Teaching and practicing VSL
+(None yet — ship to validate)
 
----
+### Active
 
-## Problem Statement
+- [ ] **COMM-01**: Real-time sign language recognition (camera input → text + speech output)
+- [ ] **COMM-02**: Speech recognition and text display (speech → text subtitles)
+- [ ] **COMM-03**: 3D avatar signing system (text → animated VSL gestures)
+- [ ] **COMM-04**: Video calling with integrated communication features
+- [ ] **COMM-05**: Split-screen real-time conversation mode (face-to-face)
+- [ ] **DICT-01**: Sign language dictionary with 4,000 VSL gesture videos
+- [ ] **LEARN-01**: Learning system with lessons organized by topic
+- [ ] **LEARN-02**: Quizzes and practice exercises with camera feedback
+- [ ] **LEARN-03**: Progress tracking for learned signs
+- [ ] **EMERG-01**: SOS emergency functionality with GPS location
+- [ ] **EMERG-02**: SMS notifications to emergency contacts
+- [ ] **ACC-01**: User account management and profiles
+- [ ] **ACC-02**: Link emergency contacts to account
+- [ ] **HIST-01**: Conversation history stored as text
+- [ ] **HIST-02**: Search and review past conversations
+- [ ] **HIST-03**: Share conversations with others
+- [ ] **NOTIF-01**: Push notifications for video calls and messages
+- [ ] **NOTIF-02**: Visual notification options for deaf users
+- [ ] **MOB-01**: Mobile app (iOS/Android) - polished production quality
+- [ ] **WEB-01**: Web app - polished production quality
+- [ ] **ADMIN-01**: Admin panel for user management
+- [ ] **ADMIN-02**: Admin panel for dictionary/content management
+- [ ] **ADMIN-03**: Admin panel for lesson management
+- [ ] **ADMIN-04**: Admin panel for SOS logs and statistics
 
-Deaf individuals in Vietnam face significant communication barriers with the hearing majority. Existing solutions are often:
-- Expensive human interpreters in short supply
-- Generic sign language apps that don't support VSL specifically
-- Not designed for real-time, face-to-face conversations
+### Out of Scope
 
-This platform solves this by:
-1. **Real-time VSL recognition** through device camera
-2. **Instant text-to-speech** output for hearing users
-3. **3D avatar signing** to visualize spoken language for deaf users
-4. **In-app video calling** with integrated communication aids
-5. **VSL learning tools** for education
+- **Model Training** - Will use pre-trained sign recognition models; training custom models is out of scope for v1
+- **Multiple Sign Dialects** - Standard VSL only; regional variations are out of scope
+- **Advanced Social Features** - No social network, groups, or public feeds beyond basic contact linking
+- **Multi-language Translation** - Vietnamese only; translation to other languages is out of scope
+- **Video Recording** - Conversations stored as text only; video/audio recording is out of scope
+- **Offline Mode** - Requires internet connectivity for AI services; offline functionality is out of scope
 
----
+## Context
 
-## Key Requirements
+**Target Users:**
+- Deaf children (primary) - need intuitive, engaging interface
+- Parents of deaf children - want to communicate and learn with their children
+- Hearing peers - classmates and friends who want to include deaf children
 
-### User Types & Authentication
-- Users register as either `deaf` or `hearing`
-- Basic email/password authentication
-- Profile management
-- Emergency contact linking (for deaf users' family notifications)
+**Use Cases:**
+- Face-to-face communication in daily life (home, school, public places)
+- Educational settings - learning VSL in structured way
+- Video calls between users
+- Emergency situations - quick SOS activation
+- Dictionary lookup for unfamiliar signs
 
-### Real-time Communication Modes
-- **Face-to-Face Mode:** Single device, split-screen interface (like Google Translate conversation)
-- **Video Call Mode:** Two-way video calling with real-time sign/speech translation
+**Technical Assets:**
+- 4,000 labeled VSL gesture videos (MP4, 1280x720) - for learning/dictionary features
+- Each video represents a single gesture with detailed annotations
 
-### Sign Language Recognition (VSL → Text → Speech)
-- Camera-based real-time VSL gesture recognition
-- Converts recognized signs to Vietnamese text
-- Text-to-speech output for hearing users
-- Supports facial expressions if training data includes them
+**Platform Strategy:**
+- Mobile is primary (camera access, portability) but both mobile and web must be production-ready in v1
+- Considering VPS for backend infrastructure
+- Preference for open-source solutions (STT, TTS, etc.)
 
-### Speech Recognition + 3D Avatar (Speech → Text → Sign)
-- Vietnamese speech-to-text recognition
-- Real-time subtitle display
-- 3D avatar (male/female models) performs corresponding VSL gestures
-- Avatar detail level depends on training data quality
+**Key Dependencies & Uncertainties:**
+- **VSL Recognition Model** - Critical path dependency; actively searching for suitable pre-trained model
+  - Target architecture: LSTM with MediaPipe landmarks
+  - Concern: Pre-trained models may have limited coverage of VSL
+  - Latency requirement: Comparable to texting (sub-second response)
+- **3D Avatar System** - Important but potentially cuttable if technical challenges prove too difficult
+- **Inference Location** - Undecided: device-side vs server-side (smartphone capability for LSTM+MediaPipe unknown)
 
-### Video Calling
-- Peer-to-peer video calls within the app
-- Real-time sign recognition during calls (deaf side)
-- Real-time avatar + subtitles during calls (hearing side)
-- Call notifications
+**Known Challenges:**
+- Sign language recognition accuracy is typically lower than speech recognition due to dataset limitations
+- 3D avatar signing animation quality directly impacts usability
+- Balancing real-time performance with model complexity
+- Ensuring the learning system is engaging for children
 
-### VSL Dictionary
-- Search signs by Vietnamese text → view gesture video/animation
-- Search by performing sign → app recognizes and shows meaning
-- Categorized by themes (greetings, medical, education, family, emotions)
-- Learning progress tracking
+## Constraints
 
-### VSL Learning System
-- Themed lesson plans (greetings, numbers, medical terms, etc.)
-- Practice quizzes and tests
-- Camera-based practice with recognition feedback
-- Progress tracking
+- **Mobile Performance**: Sign recognition must be responsive enough for natural conversation flow (ideally <1 second)
+- **Platform Parity**: Both mobile and web must feel polished and professional in v1
+- **Data Usage**: Only text history stored; no video/audio retention for privacy
+- **Open Source**: Preference for open-source components where feasible (STT, TTS, potentially recognition)
+- **VSL Specificity**: Must use Vietnamese Sign Language, not generic sign language models
 
-### Emergency SOS
-- Prominent SOS button
-- Sends SMS to pre-configured emergency contacts
-- Includes GPS location
-- Optional emergency service contact
+## Key Decisions
 
-### Notifications
-- Video call incoming notifications
-- SOS alerts to emergency contacts
-- Admin announcements
-- Learning reminders
-- Visual alerts for deaf users (vibration, flash)
-
-### Admin Panel (Web Only)
-- User management (view, suspend, delete accounts)
-- Dictionary management (add/edit/delete signs)
-- Lesson/content management
-- Usage statistics and analytics
-- SOS history review
-- Broadcast notifications
-- Multi-admin support with role-based permissions
-
----
-
-## Out of Scope (v1)
-
-- Multi-party group video calls (1-on-1 only)
-- SMS/call integration with Vietnamese emergency services (may require partnership)
-- Advanced facial expression recognition (only if data supports)
-- Support for other sign languages (VSL only)
-- Wearable device integration
-- OAuth/social login (email/password only)
-- Offline mode (requires internet for AI processing)
-- Voice/video call with non-app users (app-to-app only)
+| Decision | Rationale | Outcome |
+|----------|-----------|---------|
+| Mobile-first with web secondary | Camera access and portability essential for real-world use | — Pending |
+| Use pre-trained recognition model | Model training is too complex for v1 timeline | — Pending |
+| 3D avatar included if feasible | Significant user experience impact; may be cut if technically prohibitive | — Pending |
+| Open-source stack preferred | Cost control and community support | — Pending |
 
 ---
 
-## Constraints & Assumptions
-
-### Technical Constraints
-- Real-time AI processing requires stable internet connection
-- 3D avatar quality depends on available training data and models
-- Sign language accuracy depends on training dataset quality
-- Mobile camera quality affects recognition performance
-
-### Data Constraints
-- Need VSL training dataset (still searching GitHub)
-- Need 3D avatar models for signing animation
-- Vietnamese speech-to-text model selection pending research
-
-### Timeline Considerations
-- AI model selection and integration is the key unknown
-- 3D avatar animation pipeline may require custom development
-- Video calling requires WebRTC expertise
-
----
-
-## Success Metrics
-
-### User Experience
-- Deaf users can successfully initiate communication in under 30 seconds
-- Hearing users understand avatar signs with >90% accuracy
-- System response time <2 seconds for real-time modes
-
-### Technical
-- VSL recognition accuracy >85% on common signs
-- Speech-to-text accuracy >90% for Vietnamese
-- Video call connection time <5 seconds
-- App stability: <1% crash rate
-
-### Business
-- 1,000+ active users within 3 months of launch
-- Average session duration >10 minutes
-- Learning feature engagement >60% of users
-
----
-
-## Stakeholders
-
-- **Deaf community** — Primary beneficiaries
-- **Hearing family members** — Secondary users
-- **Healthcare providers** — Use case validation
-- **Educators** — Learning content contributors
-- **VSL experts** — Training data and validation
-
----
-
-## Open Questions
-
-1. **VSL Dataset:** Which open-source VSL recognition model/dataset will be used? (Currently searching GitHub)
-2. **3D Avatar:** Use pre-built models or custom development? What animation fidelity is achievable?
-3. **Speech-to-Text:** Which Vietnamese STT service? (Azure, Google, local model?)
-4. **Video Calling:** Self-hosted WebRTC or third-party service (Twilio, Agora)?
-5. **Deployment:** Cloud provider selection? (AWS, GCP, Azure, VN-based?)
-6. **Offline capability:** Any features should work offline?
-
----
-
-## Key Decisions (Pending)
-
-| Decision | Options | Status |
-|----------|---------|--------|
-| VSL Recognition Model | MediaPipe, custom CNN, existing VSL repo | Under research |
-| STT Engine | Google Cloud, Azure, VOSK, local model | Under research |
-| 3D Avatar Engine | Three.js, Babylon.js, Unity WebGL, Ready Player Me | Under research |
-| Video Calling | WebRTC self-hosted, Agora, Twilio | Under research |
-| Backend Framework | Node.js, Python/FastAPI, Go | Under research |
-| Mobile Framework | React Native, Flutter, native | Under research |
-| Database | PostgreSQL, Firebase, MongoDB | Under research |
-
----
+*Last updated: 2026-05-05 after initialization*
 
 ## Evolution
 
@@ -208,7 +124,3 @@ This document evolves at phase transitions and milestone boundaries.
 2. Core Value check — still the right priority?
 3. Audit Out of Scope — reasons still valid?
 4. Update Context with current state
-
----
-
-*Last updated: 2026-05-05 after initialization*
