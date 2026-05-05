@@ -1,33 +1,77 @@
-{
-  "current_phase": null,
-  "phase_progress": {
-    "1": { "started": null, "completed": null },
-    "2": { "started": null, "completed": null },
-    "3": { "started": null, "completed": null },
-    "4": { "started": null, "completed": null },
-    "5": { "started": null, "completed": null },
-    "6": { "started": null, "completed": null },
-    "7": { "started": null, "completed": null },
-    "8": { "started": null, "completed": null }
-  },
-  "requirements_traceability": {
-    "1": ["AUTH-01", "AUTH-02", "AUTH-03", "AUTH-04", "AUTH-05", "PLAT-01", "PLAT-02", "PLAT-03", "PLAT-04", "PLAT-05"],
-    "2": ["SIGN-01", "SIGN-02", "SIGN-03", "SIGN-04", "SIGN-05", "SPEECH-01", "SPEECH-02", "SPEECH-03", "SPEECH-04"],
-    "3": ["AVATAR-01", "AVATAR-02", "AVATAR-03", "AVATAR-04", "AVATAR-05", "SPEECH-02", "SPEECH-03", "SPEECH-04"],
-    "4": ["F2F-01", "F2F-02", "F2F-03", "F2F-04", "F2F-05", "F2F-06", "CALL-01", "CALL-02", "CALL-03", "CALL-04", "CALL-05", "CALL-06"],
-    "5": ["DICT-01", "DICT-02", "DICT-03", "DICT-04", "DICT-05", "LEARN-01", "LEARN-02", "LEARN-03", "LEARN-04", "LEARN-05", "LEARN-06"],
-    "6": ["SOS-01", "SOS-02", "SOS-03", "SOS-04", "SOS-05", "SOS-06", "NOTIF-01", "NOTIF-02", "NOTIF-03", "NOTIF-04", "NOTIF-05", "HISTORY-01", "HISTORY-02", "HISTORY-03", "HISTORY-04", "HISTORY-05"],
-    "7": ["ADMIN-01", "ADMIN-02", "ADMIN-03", "ADMIN-04", "ADMIN-05", "ADMIN-06", "ADMIN-07", "ADMIN-08", "ADMIN-09"],
-    "8": ["PLAT-01", "PLAT-02", "PLAT-03", "PLAT-04", "PLAT-05"]
-  },
-  "milestone_notes": {},
-  "phase_dependencies": {
-    "2": ["1"],
-    "3": ["2"],
-    "4": ["2", "3", "1"],
-    "5": ["2"],
-    "6": ["1"],
-    "7": ["1", "2", "3", "4", "5", "6"],
-    "8": ["1", "2", "3", "4", "5", "6", "7"]
-  }
-}
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: milestone
+status: unknown
+last_updated: "2026-05-05T10:09:06.391Z"
+progress:
+  total_phases: 6
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+---
+
+# Project State — VSL Bridge
+
+## Current Status
+
+**Milestone**: Planning  
+**Phase**: 0 (Pre-Phase 1)  
+**Date**: 2026-05-05
+
+## Phase Progress
+
+| Phase | Name | Status | Start Date | Completion Date |
+|-------|------|--------|------------|-----------------|
+| 0 | Project Initialization | Completed | 2026-05-05 | 2026-05-05 |
+| 1 | Foundation & Authentication | Not Started | — | — |
+| 2 | Core Sign Recognition | Not Started | — | — |
+| 3 | Communication & Emergency Features | Not Started | — | — |
+| 4 | Video Calling Infrastructure | Not Started | — | — |
+| 5 | Cross-Platform Polish | Not Started | — | — |
+| 6 | Learning System | Not Started | — | — |
+
+## Requirements Summary
+
+- **Total v1 Requirements**: 45
+- **Mapped to Phases**: 45 (100%)
+- **Not Yet Started**: 45 (100%)
+
+### Phase Distribution
+
+| Phase | Requirements |
+|-------|--------------|
+| Phase 1 | 7 (ACC-01, ACC-02, ACC-03, NOTIF-01, NOTIF-02, COMM-02, COMM-03) |
+| Phase 2 | 2 (COMM-01, COMM-06) |
+| Phase 3 | 10 (COMM-04, ACC-04, EMERG-01, EMERG-02, HIST-01 through HIST-04, MOB-04, MOB-05) |
+| Phase 4 | 2 (COMM-05, WEB-02) |
+| Phase 5 | 11 (MOB-01, MOB-02, MOB-03, WEB-01, WEB-03, WEB-04, ADMIN-01 through ADMIN-05) |
+| Phase 6 | 8 (DICT-01 through DICT-04, LEARN-01 through LEARN-04) |
+| **Total** | **45** |
+
+## Critical Dependencies
+
+| Dependency | Status | Notes |
+|------------|--------|-------|
+| Pre-trained VSL Recognition Model | Unresolved | Active search required; critical path for Phase 2 |
+| Vietnamese STT/TTS Service | Unresolved | Open-source candidate evaluation needed |
+| LiveKit/WebRTC Infrastructure | Unresolved | Self-hosted setup planned |
+| PostgreSQL + Prisma Setup | Unresolved | Standard stack, straightforward |
+
+## Blockers
+
+| Blocker | Impact | Resolution Plan |
+|---------|--------|-----------------|
+| VSL Recognition Model sourcing | Blocks Phase 2 start | Research pre-trained models (MediaPipe + LSTM approach); consider fine-tuning existing models |
+| STT/TTS Vietnamese support | Blocks Phase 1 | Evaluate VOSK, Coqui TTS, or cloud alternatives with Vietnamese models |
+
+## Next Actions
+
+1. **Research Phase**: Validate VSL recognition model availability and accuracy
+2. **Tech Stack Decision**: Finalize STT/TTS solution with Vietnamese language support
+3. **Infrastructure Setup**: Provision PostgreSQL database and deployment targets
+4. **Begin Phase 1**: Start with authentication backend and STT/TTS integration
+
+---
+
+*Last updated: 2026-05-05 after roadmap creation*
