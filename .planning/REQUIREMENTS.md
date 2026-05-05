@@ -1,163 +1,169 @@
-# Requirements — VSL Communication Platform
+# Requirements — VSL Bridge
 
-## v1 Requirements
+## Validated
 
-### Authentication & User Management (AUTH)
+(None yet — ship to validate)
 
-- [ ] **AUTH-01**: User can register with email, password, user type (deaf/hearing), age, and phone number
-- [ ] **AUTH-02**: User can log in with email/password and maintain session across app restarts
-- [ ] **AUTH-03**: User can log out from any page/screen
-- [ ] **AUTH-04**: Deaf user can add emergency contact phone number for SOS notifications
-- [ ] **AUTH-05**: User can view and edit their profile information
+## Active
 
-### Real-time Sign Recognition (SIGN)
+### v1 Requirements (MVP + Video Calling + Web)
 
-- [ ] **SIGN-01**: System can recognize VSL gestures in real-time through device camera
-- [ ] **SIGN-02**: Recognized signs are converted to Vietnamese text displayed on screen
-- [ ] **SIGN-03**: Recognized text is spoken aloud using Vietnamese TTS for hearing users
-- [ ] **SIGN-04**: System provides visual feedback when sign is being recognized
-- [ ] **SIGN-05**: Recognition works with both front and rear cameras (if available)
+#### Communication Core
 
-### Speech Recognition + Subtitles (SPEECH)
+- [ ] **COMM-01**: Real-time sign language recognition for 100-200 VSL signs via camera input, displaying recognized text within 500ms
+- [ ] **COMM-02**: Speech-to-text transcription of Vietnamese speech, displayed as subtitles within 1 second
+- [ ] **COMM-03**: Text-to-speech output converting text to natural Vietnamese audio
+- [ ] **COMM-04**: Split-screen conversation mode showing camera preview and conversation text/speech output
+- [ ] **COMM-05**: Video calling between registered users (1:1) using WebRTC with audio/video
+- [ ] **COMM-06**: AI-assisted sign feedback for practice exercises (camera-guided sign recognition with accuracy scoring)
 
-- [ ] **SPEECH-01**: System recognizes Vietnamese speech in real-time and converts to text
-- [ ] **SPEECH-02**: Recognized speech is displayed as subtitles on screen
-- [ ] **SPEECH-03**: Subtitles are clear, readable, and update in near real-time (<2s delay)
-- [ ] **SPEECH-04**: System handles continuous speech with appropriate segmentation
+#### Sign Dictionary
 
-### 3D Avatar Signing (AVATAR)
+- [ ] **DICT-01**: Sign dictionary with searchable index of 4,000 VSL gesture videos (MP4, 1280x720)
+- [ ] **DICT-02**: Video playback with standard controls (play/pause/seek)
+- [ ] **DICT-03**: Search functionality by Vietnamese text (partial match, Vietnamese language support)
+- [ ] **DICT-04**: Category/tag browsing (family, food, school, emotions, etc.)
 
-- [ ] **AVATAR-01**: System displays a 3D avatar (male and female options) that can perform VSL gestures
-- [ ] **AVATAR-02**: Avatar animates signs corresponding to Vietnamese text input (from speech recognition)
-- [ ] **AVATAR-03**: Avatar displays hand, arm, and body movements appropriate for VSL
-- [ ] **AVATAR-04**: Avatar animations are smooth and intelligible to deaf users
-- [ ] **AVATAR-05**: User can toggle between male and female avatar models
+#### User Accounts & Safety
 
-### Face-to-Face Communication Mode (FACE2FACE)
+- [ ] **ACC-01**: User registration with email/password (deaf or hearing user type selection)
+- [ ] **ACC-02**: Login/logout with session persistence
+- [ ] **ACC-03**: Profile management (name, age, user type)
+- [ ] **ACC-04**: Emergency contacts linking (phone numbers for SOS)
+- [ ] **EMERG-01**: SOS button sends SMS with GPS location to emergency contacts
+- [ ] **EMERG-02**: SOS button also triggers local emergency services (dial 115 in Vietnam)
 
-- [ ] **F2F-01**: App provides split-screen UI optimized for two users facing each other
-- [ ] **F2F-02**: Deaf user's side: camera input for sign recognition + hearing side's avatar/subtitles
-- [ ] **F2F-03**: Hearing user's side: microphone for speech + deaf side's text/speech output
-- [ ] **F2F-04**: Screen content is mirrored/rotated so each user reads naturally
-- [ ] **F2F-05**: Clear visual indicators show which side (camera or mic) is active
-- [ ] **F2F-06**: Users can easily toggle between sign mode and speech mode
+#### Conversation History
 
-### Video Calling (CALL)
+- [ ] **HIST-01**: Text-only conversation history stored locally on device
+- [ ] **HIST-02**: View past conversations with timestamps
+- [ ] **HIST-03**: Search within conversation history
+- [ ] **HIST-04**: Share conversation via copy text or export
 
-- [ ] **CALL-01**: Users can initiate and receive 1-on-1 video calls within the app
-- [ ] **CALL-02**: Call screen shows both users' video feeds
-- [ ] **CALL-03**: During call, deaf user's sign recognition works (text → speech output for hearing user)
-- [ ] **CALL-04**: During call, hearing user's speech shows subtitles + avatar for deaf user
-- [ ] **CALL-05**: App shows incoming call notification when app is backgrounded/closed
-- [ ] **CALL-06**: Users can accept, reject, or end calls
+#### Notifications
 
-### VSL Dictionary (DICT)
+- [ ] **NOTIF-01**: Visual push notifications for incoming video calls (customizable patterns/colors)
+- [ ] **NOTIF-02**: Visual notification for new SOS status (for emergency contacts)
 
-- [ ] **DICT-01**: User can search Vietnamese words/phrases and see corresponding VSL sign demonstration (video/animation)
-- [ ] **DICT-02**: User can perform a sign (via camera) and see the Vietnamese meaning
-- [ ] **DICT-03**: Dictionary is organized by categories (greetings, medical, education, family, emotions, numbers, etc.)
-- [ ] **DICT-04**: Each sign entry includes clear demonstration and description
-- [ ] **DICT-05**: User can mark signs as "learning" or "mastered"
+#### Mobile App
 
-### VSL Learning System (LEARN)
+- [ ] **MOB-01**: iOS app with production-quality UI/UX following accessibility guidelines
+- [ ] **MOB-02**: Android app with production-quality UI/UX
+- [ ] **MOB-03**: Camera access with real-time processing and overlay
+- [ ] **MOB-04**: Location services for SOS GPS
+- [ ] **MOB-05**: SMS sending capability for SOS
 
-- [ ] **LEARN-01**: App provides themed lessons (greetings, numbers, medical terms, etc.) with progressive content
-- [ ] **LEARN-02**: Lessons include video demonstrations of signs with instructions
-- [ ] **LEARN-03**: User can practice signs through camera-based exercises with recognition feedback (correct/incorrect)
-- [ ] **LEARN-04**: System provides quizzes/tests to assess learning progress
-- [ ] **LEARN-05**: User can track learning progress per theme/sign
-- [ ] **LEARN-06**: Lessons are structured with prerequisites and completion order
+#### Web App
 
-### Emergency SOS (SOS)
+- [ ] **WEB-01**: Responsive web application with feature parity to mobile app
+- [ ] **WEB-02**: WebRTC support for video calling (Chrome/Firefox/Safari)
+- [ ] **WEB-03**: Webcam access for sign recognition in browser
+- [ ] **WEB-04**: Shared account system with mobile app
 
-- [ ] **SOS-01**: Prominent SOS button accessible from main screens
-- [ ] **SOS-02**: When activated, app sends SMS to pre-configured emergency contacts
-- [ ] **SOS-03**: SMS includes user's current GPS location
-- [ ] **SOS-04**: SOS sends at minimum: "Emergency! I need help. My location: [GPS]"
-- [ ] **SOS-05**: App provides visual confirmation SOS was sent
-- [ ] **SOS-06**: SOS requires deliberate action (confirmation dialog) to prevent accidental triggers
+#### Admin Panel (Web Only)
 
-### Notifications (NOTIF)
+- [ ] **ADMIN-01**: Admin user management (view users, activate/deactivate, view SOS logs)
+- [ ] **ADMIN-02**: Dictionary content management (add/edit/delete sign entries, upload videos)
+- [ ] **ADMIN-03**: Lesson content management (create lesson structures, associate signs)
+- [ ] **ADMIN-04**: SOS incident review and statistics dashboard
+- [ ] **ADMIN-05**: Send notifications to users (broadcast/selective)
 
-- [ ] **NOTIF-01**: App sends push notification for incoming video calls
-- [ ] **NOTIF-02**: Deaf users receive visual notifications (vibration, flash) for important alerts
-- [ ] **NOTIF-03**: Admin can send broadcast notifications to users
-- [ ] **NOTIF-04**: App sends learning reminder notifications (configurable frequency)
-- [ ] **NOTIF-05**: SOS sends notifications to emergency contacts
+### v1.x Requirements (Post-MVP)
 
-### Conversation History (HISTORY)
+#### Enhanced Learning
 
-- [ ] **HIST-01**: App saves conversation history as text (no audio/video recording)
-- [ ] **HIST-02**: User can view past conversations organized by date/time
-- [ ] **HIST-03**: User can search within conversation history
-- [ ] **HIST-04**: User can share conversation text with others (share via other apps)
-- [ ] **HIST-05**: User can delete conversation history
+- [ ] **LEARN-01**: Structured bilingual lessons organized by topic (family, food, school, numbers, etc.)
+- [ ] **LEARN-02**: Quiz system with automated scoring based on sign recognition
+- [ ] **LEARN-03**: Progress tracking dashboard showing learned signs, quiz scores, lesson completion
+- [ ] **LEARN-04**: Parent dashboard to view child's learning progress
 
-### Admin Panel (ADMIN) — Web Only
+#### Social Features
 
-- [ ] **ADMIN-01**: Admin can view list of all registered users
-- [ ] **ADMIN-02**: Admin can suspend or delete user accounts
-- [ ] **ADMIN-03**: Admin can add, edit, or delete dictionary entries (VSL signs)
-- [ ] **ADMIN-04**: Admin can create, edit, or delete lessons and quiz content
-- [ ] **ADMIN-05**: Admin can view usage statistics (active users, feature usage, popular signs)
-- [ ] **ADMIN-06**: Admin can view SOS incident history
-- [ ] **ADMIN-07**: Admin can send notification messages to users
-- [ ] **ADMIN-08**: Admin panel supports multiple admin users with role-based permissions
-- [ ] **ADMIN-09**: Super Admin can manage admin user accounts and permissions
+- [ ] **SOCIAL-01**: Contact linking between users (follow/connect)
+- [ ] **SOCIAL-02**: Shared conversation history synced across devices
+- [ ] **SOCIAL-03**: Family member management (add/remove contacts)
 
-### Platform Support (PLATFORM)
+#### Enhanced Communication
 
-- [ ] **PLAT-01**: Web application works on modern browsers (Chrome, Firefox, Safari, Edge)
-- [ ] **PLAT-02**: Mobile app available for iOS and Android
-- [ ] **PLAT-03**: Both web and mobile share same feature set (except admin web-only)
-- [ ] **PLAT-04**: Camera works on both webcam (web) and device camera (mobile)
-- [ ] **PLAT-05**: App handles network connectivity issues with appropriate user feedback
+- [ ] **COMM-07**: Expanded sign recognition to 1,000+ signs
+- [ ] **COMM-08**: Improved accuracy with non-manual markers (facial expressions)
+- [ ] **COMM-09**: Multi-participant video calling (3+ people)
+- [ ] **COMM-10**: Conference calling with signing support
 
----
+### v2+ Requirements (Future Consideration)
 
-## v2 / Future Requirements (Deferred)
+#### Advanced Features
 
-### Advanced Features
-- Group video calls (multi-party)
-- Offline mode with cached dictionary/lessons
-- OAuth/social login integration
-- Voice/video call with non-app users
-- Advanced facial expression recognition
-- Support for regional VSL dialects
-- Custom avatar creation
-- Call recording (with consent)
-- Multi-language support beyond Vietnamese
+- [ ] **AVATAR-01**: 3D avatar signing system (text → animated VSL gestures)
+- [ ] **AVATAR-02**: Male and female avatar options
+- [ ] **AVATAR-03**: Real-time avatar animation synchronized with speech/text
+- [ ] **ML-01**: On-device ML inference option (privacy-preserving, offline partial functionality)
+- [ ] **ML-02**: Custom model training capabilities for organizations
+- [ ] **ADV-01**: Multi-language support (beyond Vietnamese)
+- [ ] **ADV-02**: Regional VSL dialect variations
+- [ ] **ADV-03**: Advanced analytics dashboard for administrators
+- [ ] **ADV-04**: Parental controls and content filtering
+- [ ] **ADV-05**: Offline mode with cached dictionary and limited recognition
 
-### Platform Extensions
-- Wearable companion app
-- Desktop app (Electron)
-- Progressive Web App (PWA) support
-- Smart TV interface for large-screen use
+## Out of Scope
+
+### v1 Exclusions
+
+- **Model Training** - Using pre-trained sign recognition models; custom training is out of scope
+- **3D Avatar Signing** - Deferred to v2+ due to technical complexity
+- **On-Device Only ML** - Will use server-side for quality initially; device option deferred
+- **Multi-Language Translation** - Vietnamese only; no translation to other languages
+- **Video/Audio Recording** - Conversations stored as text only; no media retention for privacy
+- **Offline Mode** - Requires internet connectivity for AI services; no offline-first implementation
+- **Social Network Features** - No feeds, groups, or public content; direct contacts only
+- **Advanced Analytics** - Basic usage metrics only; no complex data visualization
+- **Multiple Emergency Contacts Escalation** - Single contact per SOS; escalation chains deferred
+- **Custom Model Training UI** - No user-facing model training; pre-trained model only
+- **Video Recording of Learning Progress** - Quiz scores and text feedback only
 
 ---
 
-## Out of Scope — Rationale
+*Last updated: 2026-05-05 after requirements definition*
 
-| Exclusion | Reason |
-|-----------|--------|
-| SMS/call integration with Vietnamese emergency services (115) | Requires partnership with government/emergency services — may be pursued in v2 |
-| Multi-party video calls | v1 focus is on 1-on-1 communication; group calls add significant complexity |
-| Offline AI processing | Requires local ML models too heavy for mobile; keep v1 simple with online-first |
-| Other sign languages (ASL, CSL, etc.) | VSL is the focus; other languages would require separate models and data |
-| Wearable integration | Out of scope for MVP; could integrate with smartwatches later |
-| OAuth/social login | Email/password is sufficient for v1; social login adds auth complexity |
-| Non-app user calls | WebRTC requires both parties to have the app for full features |
-| Advanced facial expression recognition | Depends on training data availability; basic sign recognition first |
-| Voice-only emergency calls | SOS sends SMS with location; direct voice call would need telecom integration |
+## Traceability
 
----
+This section populated by roadmap creation.
 
-## Traceability Matrix
-
-| Requirement | Phase | Status |
-|-------------|-------|--------|
-| All v1 requirements | TBD | Pending |
-
----
-
-*Last updated: 2026-05-05 after initialization*
+| Requirement ID | Phase | Status |
+|----------------|-------|--------|
+| COMM-01 | — | — |
+| COMM-02 | — | — |
+| COMM-03 | — | — |
+| COMM-04 | — | — |
+| COMM-05 | — | — |
+| COMM-06 | — | — |
+| DICT-01 | — | — |
+| DICT-02 | — | — |
+| DICT-03 | — | — |
+| DICT-04 | — | — |
+| ACC-01 | — | — |
+| ACC-02 | — | — |
+| ACC-03 | — | — |
+| ACC-04 | — | — |
+| EMERG-01 | — | — |
+| EMERG-02 | — | — |
+| HIST-01 | — | — |
+| HIST-02 | — | — |
+| HIST-03 | — | — |
+| HIST-04 | — | — |
+| NOTIF-01 | — | — |
+| NOTIF-02 | — | — |
+| MOB-01 | — | — |
+| MOB-02 | — | — |
+| MOB-03 | — | — |
+| MOB-04 | — | — |
+| MOB-05 | — | — |
+| WEB-01 | — | — |
+| WEB-02 | — | — |
+| WEB-03 | — | — |
+| WEB-04 | — | — |
+| ADMIN-01 | — | — |
+| ADMIN-02 | — | — |
+| ADMIN-03 | — | — |
+| ADMIN-04 | — | — |
+| ADMIN-05 | — | — |
