@@ -32,19 +32,18 @@ This roadmap follows a dependency-driven approach, sequencing work from independ
 
 **Wave 1: Infrastructure**
 - [ ] 01-01-INFRASTRUCTURE.md — Docker Compose, PostgreSQL, Redis, LiveKit, ML fallbacks
-- [ ] 
 
 **Wave 2: Authentication**
-- [ ] 01-02-AUTHENTICATION.md — JWT + OAuth, profile management
+- [ ] 01-02A-AUTH-INFRASTRUCTURE.md — Prisma schema, token service, JWT middleware, Redis blacklist
+- [ ] 01-02B-AUTH-APPLICATION.md — Auth service, OAuth routes, profile management (includes OAuth per D-XX)
 
-**Wave 3: STT/TTS Services**
+**Wave 3: STT/TTS & Notifications**
 - [ ] 01-03-STT-TTS.md — Strategy pattern with Groq/Whisper.cpp and ElevenLabs/Coqui
-
-**Wave 4: Notifications**
 - [ ] 01-04-NOTIFICATIONS.md — Socket.io + FCM/APNs hybrid, SOS priority
 
 **Wave 5: Server & Integration**
-- [ ] 01-05-SERVER-TESTS.md — Bootstrap, health checks, OpenAPI, integration tests
+- [ ] 01-05A-SERVER-BOOTSTRAP.md — Express server, health checks, error handling, OpenAPI
+- [ ] 01-05B-TESTING-AND-MIDDLEWARE.md — Rate limiting, logging, Jest config, integration tests, package.json
 
 ---
 

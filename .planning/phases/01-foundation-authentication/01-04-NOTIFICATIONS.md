@@ -2,7 +2,7 @@
 phase: 01-foundation-authentication
 plan: 04
 type: execute
-wave: 4
+wave: 3
 depends_on:
   - 01
   - 02
