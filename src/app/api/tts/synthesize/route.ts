@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getTTSProvider } from '@/app/lib/providers/tts-provider'
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
@@ -27,7 +29,7 @@ export async function POST(request: NextRequest) {
       audioBuffer = await fallbackProvider.synthesize(text, language || 'vi')
     }
 
-    return new NextResponse(audioBuffer, {
+    return new NextResponse(audioBuffer.buffer.slice(audioBuffer.byteOffset, audioBuffer.byteOffset + audioBuffer.byteLength) as ArrayBuffer, {
       headers: {
         'Content-Type': 'audio/mpeg',
         'Content-Length': audioBuffer.length.toString(),

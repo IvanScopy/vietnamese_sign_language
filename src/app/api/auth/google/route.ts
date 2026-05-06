@@ -5,6 +5,8 @@ import { verifyGoogleToken, getGoogleAuthURL } from '@/app/lib/google-oauth'
 import { encryptAccessToken, encryptRefreshToken } from '@/app/lib/auth'
 import bcrypt from 'bcrypt'
 
+export const dynamic = 'force-dynamic'
+
 // GET /api/auth/google — redirect to Google for authorization
 export async function GET(request: NextRequest) {
   const authUrl = getGoogleAuthURL()

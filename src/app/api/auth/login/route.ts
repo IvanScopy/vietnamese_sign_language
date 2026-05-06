@@ -4,6 +4,8 @@ import { prisma } from '@/app/lib/db'
 import { LoginSchema } from '@/app/lib/validators'
 import { encryptAccessToken, encryptRefreshToken } from '@/app/lib/auth'
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()

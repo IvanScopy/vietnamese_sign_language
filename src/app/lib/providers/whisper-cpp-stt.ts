@@ -9,7 +9,7 @@ export class WhisperCppSTTProvider implements STTProvider {
 
   async transcribe(audioBuffer: Buffer, language = 'vi'): Promise<string> {
     const formData = new FormData()
-    formData.append('audio_file', new Blob([audioBuffer], { type: 'audio/webm' }), 'audio.webm')
+    formData.append('audio_file', new Blob([new Uint8Array(audioBuffer)], { type: 'audio/webm' }), 'audio.webm')
     formData.append('language', language)
 
     const response = await fetch(`${this.baseUrl}/inference`, {
