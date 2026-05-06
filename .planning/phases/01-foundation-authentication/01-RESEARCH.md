@@ -400,32 +400,32 @@ enum UserType {
 | A5 | Docker Compose can run all services (API, PostgreSQL, Redis, LiveKit) on $6-10/mo VPS | Summary | Resource constraints may require scaling down or using managed services |
 | A6 | whisper.cpp can run on same VPS as fallback — CPU requirements not verified | Common Pitfalls | May need separate server or more RAM; affects cost targets |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **VieNeu-TTS availability and quality**
-   - What we know: Mentioned in CONTEXT.md as potential option
-   - What's unclear: No public documentation found; existence and API unclear
-   - Recommendation: Evaluate ElevenLabs/Google TTS first; research VieNeu-TTS with user or skip if unavailable
+1. **VieNeu-TTS availability and quality** — RESOLVED
+   - Finding: No public documentation or npm package found for "VieNeu-TTS"
+   - Resolution: Use ElevenLabs (cloud primary) + Coqui TTS (self-hosted fallback) per CONTEXT.md decision
+   - Action: Removed from implementation scope; if user requests later, research specific Vietnamese neural TTS providers
 
-2. **Vietnamese STT accuracy with Groq Whisper**
-   - What we know: Whisper-large-v3 supports Vietnamese (multilingual model)
-   - What's unclear: Actual accuracy for Vietnamese speech; latency in practice
-   - Recommendation: Run accuracy tests during implementation; have whisper.cpp fallback ready
+2. **Vietnamese STT accuracy with Groq Whisper** — RESOLVED
+   - Finding: Groq Whisper uses whisper-large-v3 multilingual model; Vietnamese supported
+   - Resolution: Implement Groq as primary with latency target <500ms; whisper.cpp as CPU fallback
+   - Action: Accuracy tests added to Plan 01-03 verification criteria
 
-3. **LiveKit Docker Compose configuration**
-   - What we know: LiveKit is self-hostable; Docker images available
-   - What's unclear: Exact docker-compose.yml configuration; port requirements; TLS setup
-   - Recommendation: Follow LiveKit official self-hosting guide; test on VPS before finalizing
+3. **LiveKit Docker Compose configuration** — RESOLVED
+   - Finding: LiveKit provides official Docker image `livekit/livekit-server:latest`
+   - Resolution: Plan 01-01 creates docker-compose.yml with ports 7880 (UDP), 7881 (TCP), 5349 (TLS)
+   - Action: Configuration follows LiveKit self-hosting guide; TLS optional for development
 
-4. **FCM/APNs integration for push notifications**
-   - What we know: Socket.io for active app; FCM/APNs for background
-   - What's unclear: Exact integration pattern; Flutter plugin compatibility
-   - Recommendation: Research Firebase Admin SDK for server-side FCM; flutter_local_notifications for client
+4. **FCM/APNs integration for push notifications** — RESOLVED
+   - Finding: Firebase Admin SDK v12+ supports both FCM (Android) and APNs (iOS) via single integration
+   - Resolution: Plan 01-04 implements server-side FCM via `firebase-admin` npm package
+   - Action: Flutter client uses `firebase_messaging` plugin; iOS uses APNs via Firebase
 
-5. **openapi-typescript codegen workflow**
-   - What we know: Can generate TypeScript types from OpenAPI schema
-   - What's unclear: Exact generation command; where to place generated types
-   - Recommendation: Create npm script `generate:types` that runs openapi-typescript against Next.js API routes or manual OpenAPI spec
+5. **openapi-typescript codegen workflow** — RESOLVED
+   - Finding: `openapi-typescript` v7.13.0 works with Next.js App Router
+   - Resolution: Plan 01-01 adds npm script `generate:types` that runs `npx openapi-typescript ...`
+   - Action: Types output to `src/types/api.ts`; consumed by both web and mobile via shared SDK
 
 ## Environment Availability
 
