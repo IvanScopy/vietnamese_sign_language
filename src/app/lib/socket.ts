@@ -88,13 +88,13 @@ export function initializeSocketIO(httpServer: any) {
     })
   })
 
-  // Set global instance for access from API routes
-  globalThis.__socketIO = io
+  // Set global instance for access from API routes (type assertion for TS)
+  ;(globalThis as any).__socketIO = io
 
   return io
 }
 
 export function getIOInstance(): SocketIOServer | null {
   // This will be set during Next.js server startup
-  return globalThis.__socketIO || null
+  return (globalThis as any).__socketIO || null
 }
