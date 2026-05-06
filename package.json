@@ -1,0 +1,39 @@
+{
+  "name": "vsl-final-5days",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test": "jest --ci",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:studio": "prisma studio",
+    "generate:types": "npx openapi-typescript ./openapi.json --output ./src/types/api.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@prisma/client": "^7.8.0",
+    "bcrypt": "^6.0.0",
+    "jose": "^6.2.3",
+    "livekit-server-sdk": "^2.15.2",
+    "next": "^16.2.4",
+    "openapi-typescript": "^7.13.0",
+    "prisma": "^7.8.0",
+    "socket.io": "^4.8.3",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@testing-library/react": "^16.3.2",
+    "@types/bcrypt": "^6.0.0",
+    "@types/node": "^25.6.0",
+    "jest": "^30.3.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}
