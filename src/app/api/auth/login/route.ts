@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import bcrypt from 'bcrypt'
 import { prisma } from '@/app/lib/db'
 import { LoginSchema } from '@/app/lib/validators'
 import { encryptAccessToken, encryptRefreshToken } from '@/app/lib/auth'
@@ -8,6 +7,7 @@ export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
   try {
+    const bcrypt = await import('bcrypt')
     const body = await request.json()
     const validated = LoginSchema.safeParse(body)
 
