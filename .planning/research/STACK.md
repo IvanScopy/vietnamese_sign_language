@@ -1,26 +1,13 @@
-<!-- GSD:project-start source:PROJECT.md -->
-## Project
+# Stack Research
 
-**Vietnamese Sign Language (VSL) Bridge**
-
-A bilingual communication and learning application that enables real-time two-way communication between deaf and hearing people using Vietnamese Sign Language (VSL). The app uses AI to recognize sign language gestures and convert them to speech/text, and converts speech to text with a 3D avatar signing the response. The platform serves deaf children, their parents, and hearing peers, with a focus on educational accessibility and emotional connection.
-
-**Core Value:** Enable deaf children and hearing people (parents, peers) to communicate and learn VSL together, bridging the communication gap through technology.
-
-### Constraints
-
-- **Mobile Performance**: Sign recognition must be responsive enough for natural conversation flow (ideally <1 second)
-- **Platform Parity**: Both mobile and web must feel polished and professional in v1
-- **Data Usage**: Only text history stored; no video/audio retention for privacy
-- **Open Source**: Preference for open-source components where feasible (STT, TTS, potentially recognition)
-- **VSL Specificity**: Must use Vietnamese Sign Language, not generic sign language models
-<!-- GSD:project-end -->
-
-<!-- GSD:stack-start source:research/STACK.md -->
-## Technology Stack
+**Domain:** Vietnamese Sign Language (VSL) Communication Bridge Application
+**Researched:** 2026-05-05
+**Confidence:** HIGH
 
 ## Recommended Stack
+
 ### Core Technologies
+
 | Technology | Version | Purpose | Why Recommended |
 |------------|---------|---------|-----------------|
 | **Flutter** | 3.28.0 (stable) | Cross-platform mobile app (iOS/Android) | Superior camera access, Impeller rendering for smooth performance, single codebase for both platforms, excellent performance for real-time ML inference. Flutter's hot reload accelerates development. **Higher confidence than React Native for this use case** due to better camera/Ml pipeline control. |
@@ -30,7 +17,9 @@ A bilingual communication and learning application that enables real-time two-wa
 | **PostgreSQL** | 16.x or 17.x | Primary database | ACID compliance, excellent for relational data (users, conversations, SOS logs). Full-text search capabilities. JSONB for flexible schema. Mature and reliable. |
 | **Prisma** | 6.x | Type-safe ORM | TypeScript-first, generates types from schema. Migration system for schema evolution. Excellent developer experience with Studio GUI. Works well with PostgreSQL. |
 | **MediaPipe** | Latest (via flutter_mediapipe or JS) | Hand landmark detection | Google's on-device ML framework. Hand landmark detection extracts 21 3D hand keypoints. **Foundation for sign recognition** - pairs with LSTM classifier. Available for both mobile and web. |
+
 ### Supporting Libraries
+
 | Library | Version | Purpose | When to Use |
 |---------|---------|---------|-------------|
 | **flutter_mediapipe** | latest | MediaPipe integration for Flutter | For on-device hand landmark extraction in mobile app. Wraps MediaPipe Tasks Vision. |
@@ -63,7 +52,9 @@ A bilingual communication and learning application that enables real-time two-wa
 | **jwt_decoder** | ^2.0.1 | JWT token decoding | Parse auth tokens, check expiration. |
 | **connectivity_plus** | ^5.0.0 | Network status | Handle offline/online state transitions gracefully. |
 | **lottie** | ^6.4.0 | Animation playback | Loading spinners, success animations for UX polish. |
+
 ### Development Tools
+
 | Tool | Purpose | Notes |
 |------|---------|-------|
 | **Rust** | n/a | Required for Impeller pre-compiled shaders (Flutter). Install via rustup. |
@@ -79,16 +70,53 @@ A bilingual communication and learning application that enables real-time two-wa
 | **Jest** | Testing (web) | Unit tests for React components and utilities. |
 | **test + mocktail** | Testing (Flutter) | Unit and widget testing framework for Flutter. |
 | **Git Hooks** | Pre-commit | Use husky for lint-staged to run linters pre-commit. |
+
 ## Installation
+
+```bash
 # Flutter mobile app setup
+flutter channel stable
+flutter upgrade
+flutter config --enable-web  # Enable web support too
+flutter doctor  # Verify all components
+
 # Create Flutter project
+flutter create vsl_bridge --platforms ios,android,web
+cd vsl_bridge
+flutter pub add riverpod go_router dio camera permission_handler
+flutter pub add geolocator url_launcher flutter_local_notifications
+flutter pub add workmanager livekit_client video_player chewie
+flutter pub add hive shared_preferences jwt_decoder connectivity_plus lottie
+flutter pub add tflite_flutter  # For on-device ML
+
 # Web app setup (in separate directory or monorepo)
+npx create-next-app@latest vsl-bridge-web --typescript --tailwind --app
+cd vsl-bridge-web
+npm install @tanstack/react-query @react-three/fiber @react-three/drei three
+npm install socket.io-client zod livekit-client
+
 # Backend setup
+mkdir backend && cd backend
+npm init -y
+npm install @livekit/server-sdk @fastify/websocket socket.io @prisma/client
+npm install faster-whisper  # or openai-whisper
+npm install piper-tts  # or espeak-ng bindings
+npm install zod bcrypt jsonwebtoken
+npm install -D typescript ts-node @types/node prisma
+
 # Initialize Prisma
+npx prisma init
 # Configure datasource in prisma/schema.prisma for PostgreSQL
+
 # Local development with Docker
+docker compose up -d postgres livekit
+
 # LiveKit self-hosting (alternative to Docker)
+livekit-server --dev --bind-address 0.0.0.0:7880 --ws-bind-address 0.0.0.0:7881 --rtc-bind-address 0.0.0.0:7882 --api-key devkey --api-secret secret
+```
+
 ## Alternatives Considered
+
 | Recommended | Alternative | When to Use Alternative |
 |-------------|-------------|-------------------------|
 | **Flutter (Mobile)** | React Native | If team has strong React expertise. React Native Vision Camera + ML Kit for landmarks. But Flutter's Impeller + native performance edge better for real-time ML pipeline. |
@@ -103,7 +131,9 @@ A bilingual communication and learning application that enables real-time two-wa
 | **MediaPipe** | OpenPose | OpenPose older, less maintained. MediaPipe is Google-backed, optimized for mobile. OpenPose only if you need specific pose formats. |
 | **Socket.io** | Supabase Realtime | Supabase adds database realtime sync "for free". But you're self-hosting Postgres, Supabase Realtime adds complexity. Socket.io simpler for chat/notifications. |
 | **Riverpod (Flutter)** | Bloc | Bloc more structured, testable. Riverpod simpler, less boilerplate for state management. Use Bloc if you need strict unidirectional data flow. |
+
 ## What NOT to Use
+
 | Avoid | Why | Use Instead |
 |-------|-----|-------------|
 | **Firebase** | Vendor lock-in, costs scale with usage. Vietnamese regulations may require data sovereignty. | Self-hosted PostgreSQL + LiveKit on VPS. |
@@ -118,21 +148,32 @@ A bilingual communication and learning application that enables real-time two-wa
 | **Legacy TensorFlow.js** | Slower than native TFLite, larger bundle size. | TensorFlow Lite for mobile, server-side PyTorch/TensorFlow. |
 | **getUserMedia raw WebRTC** | Too low-level for video calling UI. Handles reconnection poorly. | LiveKit SDK with prebuilt components. |
 | **Push notification services without fallback** | iOS/Android push unreliable. No fallback for foreground notifications. | Socket.io + local notifications hybrid approach. |
+
 ## Stack Patterns by Variant
+
+**If budget is extremely constrained (nonprofit):**
 - Use Free Tier: Vercel Hobby (web), Fly.io free tier (LiveKit + backend), Neon Free Tier (PostgreSQL)
 - Total monthly cost: ~$0-5
 - Trade-offs: Limited concurrent users, occasional cold starts on serverless
+
+**If faster MVP is priority (funding available):**
 - Use managed services: Daily.co (video), Supabase (DB + auth + realtime), Railway/Render (backend)
 - Skip self-hosting LiveKit complexity
 - Total monthly cost: ~$50-200 depending on usage
+
+**If learning is primary, not calling:**
 - Defer LiveKit entirely - focus on dictionary/learning features first
 - Add video calling in phase 2 after validating core recognition
 - Reduces initial complexity significantly
+
+**If device-side inference preferred (privacy/offline):**
 - Full LSTM + MediaPipe pipeline in Flutter via tflite_flutter
 - Backend only for auth, dictionary storage, SOS SMS
 - STT/TTS can use device APIs or smaller offline models
 - Reduces server costs but increases app size (~50MB for TFLite models)
+
 ## Version Compatibility
+
 | Package A | Compatible With | Notes |
 |-----------|-----------------|-------|
 | Flutter 3.28.0 | Dart 3.6+ | Requires Dart 3.6. All Flutter plugins must support null safety. |
@@ -145,8 +186,50 @@ A bilingual communication and learning application that enables real-time two-wa
 | TensorFlow Lite 2.16.0 | tflite_flutter 0.10.0 | TFLite interpreter version compatibility matters for opset. |
 | Faster Whisper 0.11.0 | Python 3.10-3.13 | CTranslate2 binary wheels available for these Python versions. |
 | Riverpod 2.6.0 | Flutter 3.19+ | Riverpod 3.0 will have breaking changes. Pin to 2.x until ready. |
+
 ## Technology Stack Summary
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                         VSL Bridge Stack                           │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  ┌────────────┐     ┌────────────┐     ┌────────────┐            │
+│  │   Flutter  │     │  Next.js   │     │   Node.js  │            │
+│  │  3.28.0    │     │  15.1.8    │     │  22.x LTS  │            │
+│  │ (Mobile +  │     │   (Web)    │     │ (Backend)  │            │
+│  │   Web)     │     │            │     │            │            │
+│  └─────┬──────┘     └─────┬──────┘     └─────┬──────┘            │
+│        │                  │                  │                   │
+│        └──────────────────┼──────────────────┘                   │
+│                           │                                       │
+│                    ┌──────▼─────────────────────┐                │
+│                    │    PostgreSQL 16/17        │                │
+│                    │    + Prisma ORM            │                │
+│                    └───────────────────────────┘                │
+│                                                                     │
+│  ┌──────────────────────────────────────────────────────────┐    │
+│  │                     AI/ML Stack                          │    │
+│  │  MediaPipe (landmarks) → LSTM/TFLite (sign classifier) │    │
+│  │  Faster Whisper (STT) / Piper-tts (TTS)                │    │
+│  └──────────────────────────────────────────────────────────┘    │
+│                                                                     │
+│  ┌──────────────────────────────────────────────────────────┐    │
+│  │                  Real-time Stack                         │    │
+│  │  LiveKit SFU (self-hosted) + Socket.io (chat/notify)    │    │
+│  └──────────────────────────────────────────────────────────┘    │
+│                                                                     │
+│  ┌──────────────────────────────────────────────────────────┐    │
+│  │                    3D Avatar Stack                       │    │
+│  │  Three.js + @react-three/fiber (Web)                     │    │
+│  │  Flutter 3D (future: consider flutter_3d_obj or Unity)  │    │
+│  └──────────────────────────────────────────────────────────┘    │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
 ## Sources
+
 - `/google-ai-edge/mediapipe` — Hand landmark detection, on-device ML pipelines
 - `/websites/flutter_dev` — Flutter 3.28, Impeller rendering, camera plugin
 - `/websites/webrtc` — WebRTC protocol, media constraints, RTCPeerConnection
@@ -162,44 +245,8 @@ A bilingual communication and learning application that enables real-time two-wa
 - `/openai/whisper` — Whisper model architecture, multilingual transcription
 - `/websites/daily_co` — Daily video API as managed alternative comparison
 - Web search — Vietnamese STT/TTS ecosystem (Faster Whisper, Piper), React Native vs Flutter performance
-<!-- GSD:stack-end -->
 
-<!-- GSD:conventions-start source:CONVENTIONS.md -->
-## Conventions
-
-Conventions not yet established. Will populate as patterns emerge during development.
-<!-- GSD:conventions-end -->
-
-<!-- GSD:architecture-start source:ARCHITECTURE.md -->
-## Architecture
-
-Architecture not yet mapped. Follow existing patterns found in the codebase.
-<!-- GSD:architecture-end -->
-
-<!-- GSD:skills-start source:skills/ -->
-## Project Skills
-
-No project skills found. Add skills to any of: `.claude/skills/`, `.agents/skills/`, `.cursor/skills/`, `.github/skills/`, or `.codex/skills/` with a `SKILL.md` index file.
-<!-- GSD:skills-end -->
-
-<!-- GSD:workflow-start source:GSD defaults -->
-## GSD Workflow Enforcement
-
-Before using Edit, Write, or other file-changing tools, start work through a GSD command so planning artifacts and execution context stay in sync.
-
-Use these entry points:
-- `/gsd-quick` for small fixes, doc updates, and ad-hoc tasks
-- `/gsd-debug` for investigation and bug fixing
-- `/gsd-execute-phase` for planned phase work
-
-Do not make direct repo edits outside a GSD workflow unless the user explicitly asks to bypass it.
-<!-- GSD:workflow-end -->
-
-
-
-<!-- GSD:profile-start -->
-## Developer Profile
-
-> Profile not yet configured. Run `/gsd-profile-user` to generate your developer profile.
-> This section is managed by `generate-claude-profile` -- do not edit manually.
-<!-- GSD:profile-end -->
+---
+*Stack research for: Vietnamese Sign Language (VSL) Bridge Application*
+*Researched: 2026-05-05*
+*Confidence: HIGH (researched 20+ libraries, verified current versions)*
