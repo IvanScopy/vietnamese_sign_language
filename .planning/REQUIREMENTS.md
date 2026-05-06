@@ -11,8 +11,8 @@
 #### Communication Core
 
 - [ ] **COMM-01**: Real-time sign language recognition for 100-200 VSL signs via camera input, displaying recognized text within 500ms
-- [ ] **COMM-02**: Speech-to-text transcription of Vietnamese speech, displayed as subtitles within 1 second
-- [ ] **COMM-03**: Text-to-speech output converting text to natural Vietnamese audio
+- [x] **COMM-02**: Speech-to-text transcription of Vietnamese speech, displayed as subtitles within 1 second
+- [x] **COMM-03**: Text-to-speech output converting text to natural Vietnamese audio
 - [ ] **COMM-04**: Split-screen conversation mode showing camera preview and conversation text/speech output
 - [ ] **COMM-05**: Video calling between registered users (1:1) using WebRTC with audio/video
 - [ ] **COMM-06**: AI-assisted sign feedback for practice exercises (camera-guided sign recognition with accuracy scoring)
@@ -132,8 +132,8 @@ This section populated by roadmap creation.
 | Requirement ID | Phase | Status |
 |----------------|-------|--------|
 | COMM-01 | — | — |
-| COMM-02 | — | — |
-| COMM-03 | — | — |
+| COMM-02 | 01 | Completed |
+| COMM-03 | 01 | Completed |
 | COMM-04 | — | — |
 | COMM-05 | — | — |
 | COMM-06 | — | — |

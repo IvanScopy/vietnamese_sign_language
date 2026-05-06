@@ -2,41 +2,53 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: unknown
-last_updated: "2026-05-06T07:11:02.095Z"
+status: in-progress
+last_updated: "2026-05-06T14:00:00.000Z"
 progress:
   total_phases: 8
   completed_phases: 0
   total_plans: 7
-  completed_plans: 0
-  percent: 0
+  completed_plans: 5
+  percent: 71
+current_phase: 01-foundation-authentication
+current_plan: 03
 ---
 
 # Project State — VSL Bridge
 
 ## Current Status
 
-**Milestone**: Planning  
-**Phase**: 0 (Pre-Phase 1)  
-**Date**: 2026-05-05
+**Milestone**: v1.0  
+**Phase**: 01 (Foundation & Authentication)  
+**Plan**: 03 (STT/TTS Provider Abstraction)  
+**Date**: 2026-05-06
 
 ## Phase Progress
 
 | Phase | Name | Status | Start Date | Completion Date |
 |-------|------|--------|------------|-----------------|
 | 0 | Project Initialization | Completed | 2026-05-05 | 2026-05-05 |
-| 1 | Foundation & Authentication | Not Started | — | — |
+| 1 | Foundation & Authentication | In Progress | 2026-05-06 | — |
 | 2 | Core Sign Recognition | Not Started | — | — |
 | 3 | Communication & Emergency Features | Not Started | — | — |
 | 4 | Video Calling Infrastructure | Not Started | — | — |
 | 5 | Cross-Platform Polish | Not Started | — | — |
 | 6 | Learning System | Not Started | — | — |
 
+## Completed Plans
+
+| Phase | Plan | Name | Completed Date |
+|-------|------|------|-----------------|
+| 01 | 01 | Project Setup & Authentication Utils | 2026-05-06 |
+| 01 | 02 | Authentication API Routes | 2026-05-06 |
+| 01 | 03 | STT/TTS Provider Abstraction | 2026-05-06 |
+
 ## Requirements Summary
 
 - **Total v1 Requirements**: 45
-- **Mapped to Phases**: 45 (100%)
-- **Not Yet Started**: 45 (100%)
+- **Completed**: 2 (COMM-02, COMM-03)
+- **In Progress**: 5 (ACC-01, ACC-02, ACC-03, NOTIF-01, NOTIF-02)
+- **Not Yet Started**: 38 (84%)
 
 ### Phase Distribution
 
@@ -50,29 +62,27 @@ progress:
 | Phase 6 | 8 (DICT-01 through DICT-04, LEARN-01 through LEARN-04) |
 | **Total** | **45** |
 
-## Critical Dependencies
+## Decisions Made
 
-| Dependency | Status | Notes |
-|------------|--------|-------|
-| Pre-trained VSL Recognition Model | Unresolved | Active search required; critical path for Phase 2 |
-| Vietnamese STT/TTS Service | Unresolved | Open-source candidate evaluation needed |
-| LiveKit/WebRTC Infrastructure | Unresolved | Self-hosted setup planned |
-| PostgreSQL + Prisma Setup | Unresolved | Standard stack, straightforward |
+| ID | Decision | Rationale |
+|----|----------|-----------|
+| 01-03-01 | Use Strategy Pattern for STT/TTS provider abstraction | Allows swapping between cloud and local providers via environment variables |
+| 01-03-02 | Groq Whisper as primary STT, whisper.cpp as fallback | Groq offers <500ms latency; whisper.cpp provides self-hosted fallback |
+| 01-03-03 | ElevenLabs as primary TTS, Coqui TTS as fallback | ElevenLabs multilingual v2 supports Vietnamese; Coqui provides self-hosted fallback |
+| 01-03-04 | Cloud-to-local fallback in API endpoints | Simpler than building fallback into each provider |
 
 ## Blockers
 
 | Blocker | Impact | Resolution Plan |
 |---------|--------|-----------------|
-| VSL Recognition Model sourcing | Blocks Phase 2 start | Research pre-trained models (MediaPipe + LSTM approach); consider fine-tuning existing models |
-| STT/TTS Vietnamese support | Blocks Phase 1 | Evaluate VOSK, Coqui TTS, or cloud alternatives with Vietnamese models |
+| VSL Recognition Model sourcing | Blocks Phase 2 start | Research pre-trained models (MediaPipe + LSTM approach) |
 
 ## Next Actions
 
-1. **Research Phase**: Validate VSL recognition model availability and accuracy
-2. **Tech Stack Decision**: Finalize STT/TTS solution with Vietnamese language support
-3. **Infrastructure Setup**: Provision PostgreSQL database and deployment targets
-4. **Begin Phase 1**: Start with authentication backend and STT/TTS integration
+1. Complete remaining Phase 1 plans (01-04, 01-05 if applicable)
+2. Continue with authentication testing and validation
+3. Prepare for Phase 2: Sign Language Recognition
 
 ---
 
-*Last updated: 2026-05-05 after roadmap creation*
+*Last updated: 2026-05-06 after completing plan 01-03*

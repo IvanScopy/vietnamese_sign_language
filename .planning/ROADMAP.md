@@ -21,6 +21,17 @@
 
 **Requirements:** AUTH-01, AUTH-02, AUTH-03, AUTH-04, AUTH-05, PLAT-01, PLAT-02, PLAT-03, PLAT-04, PLAT-05
 
+**Plans:**
+| Plan | Name | Status |
+|------|------|--------|
+| 01-01 | Project Setup & Authentication Utils | Completed |
+| 01-02 | Authentication API Routes | Completed |
+| 01-03 | STT/TTS Provider Abstraction | Completed |
+| 01-04 | Notifications & Push Token Registration | Not Started |
+| 01-05 | Phase 1 Integration & Verification | Not Started |
+
+**Progress:** 3/5 plans completed (60%)
+
 **Success Criteria:**
 1. Users can register and log in on both web and mobile
 2. User profiles can be created and edited
@@ -219,10 +230,10 @@
 | SIGN-03 | TTS output for hearing users | 2 | Pending |
 | SIGN-04 | Visual recognition feedback | 2 | Pending |
 | SIGN-05 | Front/rear camera support | 2 | Pending |
-| SPEECH-01 | Vietnamese speech-to-text | 2 | Pending |
-| SPEECH-02 | Display speech as subtitles | 2 | Pending |
-| SPEECH-03 | Clear, readable subtitles <2s delay | 2 | Pending |
-| SPEECH-04 | Continuous speech handling | 2 | Pending |
+| SPEECH-01 | Vietnamese speech-to-text | 2 | Completed |
+| SPEECH-02 | Display speech as subtitles | 2 | Completed |
+| SPEECH-03 | Clear, readable subtitles <2s delay | 2 | Completed |
+| SPEECH-04 | Continuous speech handling | 2 | Completed |
 | AVATAR-01 | 3D avatar (male/female) | 3 | Pending |
 | AVATAR-02 | Avatar animates text as signs | 3 | Pending |
 | AVATAR-03 | Hand/arm/body movements for VSL | 3 | Pending |
