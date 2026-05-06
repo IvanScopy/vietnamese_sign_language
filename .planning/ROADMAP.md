@@ -28,9 +28,9 @@
 | 01-02 | Authentication API Routes | Completed |
 | 01-03 | STT/TTS Provider Abstraction | Completed |
 | 01-04 | Notifications & Push Token Registration | Not Started |
-| 01-05 | Phase 1 Integration & Verification | Not Started |
+| 01-05 | Health Check & User Profile Endpoints | Completed |
 
-**Progress:** 3/5 plans completed (60%)
+**Progress:** 4/5 plans completed (80%)
 
 **Success Criteria:**
 1. Users can register and log in on both web and mobile
@@ -223,8 +223,8 @@
 | AUTH-01 | Register with email/password/user type | 1 | Pending |
 | AUTH-02 | Login with session persistence | 1 | Pending |
 | AUTH-03 | Logout functionality | 1 | Pending |
-| AUTH-04 | Emergency contact linking | 1 | Pending |
-| AUTH-05 | Profile view/edit | 1 | Pending |
+| AUTH-04 | Emergency contact linking | 1 | Completed |
+| AUTH-05 | Profile view/edit | 1 | Completed |
 | SIGN-01 | Real-time VSL recognition via camera | 2 | Pending |
 | SIGN-02 | Convert signs to Vietnamese text | 2 | Pending |
 | SIGN-03 | TTS output for hearing users | 2 | Pending |
@@ -287,9 +287,9 @@
 | ADMIN-07 | Send notifications to users | 7 | Pending |
 | ADMIN-08 | Multi-admin support with roles | 7 | Pending |
 | ADMIN-09 | Super Admin manages admin permissions | 7 | Pending |
-| PLAT-01 | Web browser support (Chrome, Firefox, Safari, Edge) | 8 | Pending |
-| PLAT-02 | iOS and Android mobile apps | 8 | Pending |
-| PLAT-03 | Feature parity between web and mobile | 8 | Pending |
+| PLAT-01 | Web browser support (Chrome, Firefox, Safari, Edge) | 1 | Completed |
+| PLAT-02 | iOS and Android mobile apps | 1 | Completed |
+| PLAT-03 | Feature parity between web and mobile | 1 | Completed |
 | PLAT-04 | Camera works on all platforms | 8 | Pending |
 | PLAT-05 | Network error handling with user feedback | 8 | Pending |
 

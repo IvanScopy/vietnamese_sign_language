@@ -145,6 +145,8 @@ This section populated by roadmap creation.
 | ACC-02 | — | — |
 | ACC-03 | — | — |
 | ACC-04 | — | — |
+| AUTH-04 | 1 | Completed |
+| AUTH-05 | 1 | Completed |
 | EMERG-01 | — | — |
 | EMERG-02 | — | — |
 | HIST-01 | — | — |
@@ -156,6 +158,11 @@ This section populated by roadmap creation.
 | MOB-01 | — | — |
 | MOB-02 | — | — |
 | MOB-03 | — | — |
+| PLAT-01 | 1 | Completed |
+| PLAT-02 | 1 | Completed |
+| PLAT-03 | 1 | Completed |
+| PLAT-04 | — | — |
+| PLAT-05 | — | — |
 | MOB-04 | — | — |
 | MOB-05 | — | — |
 | WEB-01 | — | — |
