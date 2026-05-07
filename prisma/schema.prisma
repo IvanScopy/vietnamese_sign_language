@@ -16,7 +16,12 @@ model User {
   updatedAt    DateTime  @updatedAt
 
   // Relations
-  refreshTokens RefreshToken[]
+  refreshTokens     RefreshToken[]
+  emergencyContacts EmergencyContact[]
+  deviceTokens      DeviceToken[]
+  notifications     Notification[]
+  sentSosAlerts     SOSAlert[] @relation("SOSAlertSender")
+  sosAlertReceivers SOSAlertReceiver[]
 
   @@map("users")
 }
@@ -36,4 +41,75 @@ model RefreshToken {
 enum UserType {
   DEAF
   HEARING
+  PARENT
+  TEACHER
+}
+
+model EmergencyContact {
+  id        Int      @id @default(autoincrement())
+  name      String
+  phone     String
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@map("emergency_contacts")
+}
+
+model DeviceToken {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  platform  String   // 'ios', 'android', 'web'
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@map("device_tokens")
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  title     String
+  body      String
+  data      String?   // JSON string
+  priority  String   @default("normal")
+  type      String   @default("MESSAGE")
+  isRead    Boolean  @default(false)
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@map("notifications")
+}
+
+model SOSAlert {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation("SOSAlertSender", fields: [userId], references: [id], onDelete: Cascade)
+  location  String?
+  status    SOSStatus @default(ACTIVE)
+  createdAt DateTime  @default(now())
+
+  // Emergency contacts who were notified
+  receivers SOSAlertReceiver[] @relation("SOSAlertReceiverRelation")
+
+  @@map("sos_alerts")
+}
+
+model SOSAlertReceiver {
+  id            Int      @id @default(autoincrement())
+  sosAlertId    Int
+  sosAlert      SOSAlert @relation("SOSAlertReceiverRelation", fields: [sosAlertId], references: [id], onDelete: Cascade)
+  contactId     Int
+  contact       User     @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  deliveredAt   DateTime?
+  acknowledgedAt DateTime?
+
+  @@map("sos_alert_receivers")
+}
+
+enum SOSStatus {
+  ACTIVE
+  RESOLVED
+  CANCELLED
 }

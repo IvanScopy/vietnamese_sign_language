@@ -24,3 +24,18 @@ export const SynthesizeSchema = z.object({
   text: z.string().min(1, 'Text is required'),
   language: z.string().default('vi'),
 })
+
+export const RegisterTokenSchema = z.object({
+  token: z.string().min(1, 'Device token is required'),
+  platform: z.enum(['ios', 'android', 'web']),
+  userId: z.number().int().positive(),
+})
+
+export const SendNotificationSchema = z.object({
+  toUserId: z.number().int().positive(),
+  title: z.string().min(1),
+  body: z.string().min(1),
+  data: z.record(z.string()).optional(),
+  priority: z.enum(['normal', 'high']).default('normal'),
+  type: z.enum(['CALL', 'SOS', 'MESSAGE', 'LEARNING']).default('MESSAGE'),
+})

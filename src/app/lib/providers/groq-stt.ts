@@ -3,7 +3,7 @@ import type { STTProvider } from './stt-provider'
 export class GroqSTTProvider implements STTProvider {
   async transcribe(audioBuffer: Buffer, language = 'vi'): Promise<string> {
     const formData = new FormData()
-    formData.append('file', new Blob([audioBuffer], { type: 'audio/webm' }), 'audio.webm')
+    formData.append('file', new Blob([new Uint8Array(audioBuffer)], { type: 'audio/webm' }), 'audio.webm')
     formData.append('model', 'whisper-large-v3-turbo')
     formData.append('language', language)
     formData.append('response_format', 'json')
