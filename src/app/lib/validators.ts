@@ -35,7 +35,7 @@ export const SendNotificationSchema = z.object({
   toUserId: z.number().int().positive(),
   title: z.string().min(1),
   body: z.string().min(1),
-  data: z.record(z.string()).optional(),
+  data: z.record(z.string(), z.string()).optional(),
   priority: z.enum(['normal', 'high']).default('normal'),
   type: z.enum(['CALL', 'SOS', 'MESSAGE', 'LEARNING']).default('MESSAGE'),
 })
