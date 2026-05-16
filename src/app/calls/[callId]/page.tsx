@@ -8,7 +8,7 @@ import IncomingCallModal from '@/components/calls/IncomingCallModal'
 
 type CallState = 'RINGING' | 'ACTIVE' | 'ENDED' | 'MISSED' | 'REJECTED' | 'CANCELLED' | 'BUSY' | 'FAILED'
 
-interface CallData {
+export interface CallData {
   id: number
   state: CallState
   roomName?: string
@@ -27,6 +27,60 @@ const stateToResultMap: Record<string, CallResultState> = {
   CANCELLED: 'cancelled',
   BUSY: 'busy',
   FAILED: 'failed',
+}
+
+export async function fetchActiveCallToken(callId: number): Promise<string> {
+  const tokenResponse = await fetch(`/api/calls/${callId}/token`, {
+    method: 'POST',
+    credentials: 'include',
+  })
+
+  if (!tokenResponse.ok) {
+    throw new Error('Failed to fetch call token')
+  }
+
+  const tokenData = await tokenResponse.json()
+  if (!tokenData.token) {
+    throw new Error('Call token missing from response')
+  }
+
+  return tokenData.token
+}
+
+export async function fetchCallPageData(
+  callId: number,
+): Promise<{ data: CallData; token: string | null }> {
+  const response = await fetch(`/api/calls/${callId}`, {
+    credentials: 'include',
+  })
+
+  if (!response.ok) {
+    throw new Error('Call not found')
+  }
+
+  const data = await response.json()
+  if (data.state === 'ACTIVE') {
+    return {
+      data,
+      token: await fetchActiveCallToken(callId),
+    }
+  }
+
+  return { data, token: null }
+}
+
+export async function acceptRingingCall(callId: number): Promise<string> {
+  const response = await fetch(`/api/calls/${callId}/accept`, {
+    method: 'POST',
+    credentials: 'include',
+  })
+
+  if (!response.ok) {
+    throw new Error('Failed to accept call')
+  }
+
+  const data = await response.json()
+  return data.token || data.calleeToken
 }
 
 export default function CallPage() {
@@ -55,15 +109,7 @@ export default function CallPage() {
 
     async function fetchCallData() {
       try {
-        const response = await fetch(`/api/calls/${callId}`, {
-          credentials: 'include',
-        })
-
-        if (!response.ok) {
-          throw new Error('Call not found')
-        }
-
-        const data = await response.json()
+        const { data, token: activeToken } = await fetchCallPageData(callId)
         setCallData(data)
 
         if (data.state === 'RINGING') {
@@ -71,16 +117,7 @@ export default function CallPage() {
           setShowIncomingModal(true)
           setCallerName(data.callerName || 'Unknown caller')
         } else if (data.state === 'ACTIVE') {
-          // Fetch token for active call
-          const tokenResponse = await fetch(`/api/calls/${callId}/accept`, {
-            method: 'POST',
-            credentials: 'include',
-          })
-
-          if (tokenResponse.ok) {
-            const tokenData = await tokenResponse.json()
-            setToken(tokenData.token || tokenData.calleeToken)
-          }
+          setToken(activeToken)
         } else if (terminalStates.includes(data.state)) {
           // Terminal state from API
           setIsLoading(false)
@@ -101,17 +138,8 @@ export default function CallPage() {
     if (!callId) return
 
     try {
-      const response = await fetch(`/api/calls/${callId}/accept`, {
-        method: 'POST',
-        credentials: 'include',
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to accept call')
-      }
-
-      const data = await response.json()
-      setToken(data.token || data.calleeToken)
+      const acceptToken = await acceptRingingCall(callId)
+      setToken(acceptToken)
       setShowIncomingModal(false)
       setCallData((prev) => (prev ? { ...prev, state: 'ACTIVE' } : null))
     } catch (err) {
