@@ -100,12 +100,8 @@ class _SosScreenState extends State<SosScreen> {
 
   // Results
   SosLocationResult? _locationResult;
-  SosAlertResponse? _alertResponse;
   String? _statusMessage; // display text for current state
   bool _dialerVisible = false; // whether Gọi 115 action is shown
-
-  // Whether location permission was denied
-  bool _locationDenied = false;
 
   // Whether no contacts were configured
   bool _noContacts = false;
@@ -238,10 +234,6 @@ class _SosScreenState extends State<SosScreen> {
     if (!mounted) return;
 
     _locationResult = location;
-    _locationDenied = location.label == SosLocationLabel.unavailable &&
-        location.displayLabel.contains('quyền') == false
-        ? false
-        : location.label == SosLocationLabel.unavailable;
 
     // Step 2: send
     setState(() {
@@ -260,7 +252,6 @@ class _SosScreenState extends State<SosScreen> {
 
       if (!mounted) return;
 
-      _alertResponse = response;
       _noContacts = response.contactsCount == 0;
 
       switch (response.status) {
