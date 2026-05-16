@@ -380,22 +380,21 @@ Future<bool> openSmsComposer(String phone, String body) {
 | A4 | Twilio webhook signature validation is the correct callback-authentication method for this implementation. | Security Domain | If callback validation differs in the chosen runtime, provider status updates could be spoofable until corrected. |
 | A5 | Idempotency keys or active-alert checks are the right duplicate-SOS mitigation. | Security Domain | If not implemented, repeated taps/retries could create duplicate SMS sends or duplicate incident records. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Which Twilio sender configuration will production use?**
-   - What we know: Twilio supports Vietnam SMS pricing and Messaging Services/status callbacks. [CITED: https://www.twilio.com/en-us/sms/pricing/vn] [CITED: https://www.twilio.com/docs/messaging/services]
-   - What's unclear: Whether the project account has a compliant sender, Vietnam geo permissions enabled, and reliable delivery to target carriers.
-   - Recommendation: Planner should add a manual setup/test task with real Vietnam numbers before marking EMERG-01 complete.
+   - **RESOLVED:** Production uses a Twilio Messaging Service configured by `TWILIO_MESSAGING_SERVICE_SID`, with credentials in `TWILIO_ACCOUNT_SID` and `TWILIO_AUTH_TOKEN`. The Messaging Service status callback is configured to POST to `${TWILIO_STATUS_CALLBACK_BASE_URL}/api/sos/twilio/status`.
+   - **RESOLVED:** No sender value is hardcoded in code or plans. If Twilio credentials or `TWILIO_MESSAGING_SERVICE_SID` are absent in development, provider SMS is treated as unavailable and the mobile flow uses the native SMS composer fallback per D-09 and D-10.
+   - **RESOLVED:** Production readiness still requires Twilio dashboard setup and consented Vietnam-number testing before marking EMERG-01 verified: enable Vietnam SMS geo permissions, attach an approved sender to the Messaging Service, and confirm status callbacks reach the Phase 5 callback route.
 
 2. **How should emergency-contact phone numbers be normalized?**
-   - What we know: Existing `EmergencyContact.phone` is a free string. [VERIFIED: prisma/schema.prisma]
-   - What's unclear: Whether v1 should enforce E.164 `+84...` storage or accept local Vietnamese formats and normalize before send.
-   - Recommendation: Store normalized E.164 plus display input; reject invalid numbers at contact-save time.
+   - **RESOLVED:** Phase 5 stores the user's display input in `EmergencyContact.phone` and stores the provider-safe normalized value in `EmergencyContact.phoneE164`.
+   - **RESOLVED:** Contact create/update validation accepts common Vietnam formats such as local `0...`, `84...`, and `+84...`, normalizes valid numbers to E.164 `+84...`, and rejects invalid phone numbers at contact-save time.
+   - **RESOLVED:** SOS provider sends use `phoneE164` only. Existing contacts without a valid normalized value must be normalized during contact update/backfill or excluded from provider send with an honest failed/invalid-recipient attempt record; the SOS flow still keeps the `Gọi 115` path available per D-14.
 
 3. **Should SOS alerts be visible in admin logs in Phase 5 or deferred to Phase 6 admin?**
-   - What we know: ADMIN-04 is Phase 6, while Phase 5 needs safety logging. [VERIFIED: .planning/REQUIREMENTS.md]
-   - What's unclear: Whether to add only backend records now or also a minimal admin view.
-   - Recommendation: Persist full logs now; defer admin UI to Phase 6.
+   - **RESOLVED:** Phase 5 persists full backend SOS logs through `SOSAlert` and `SosAlertAttempt`, including provider metadata, callback statuses, location labels, native fallback records, and dialer handoff records.
+   - **RESOLVED:** Phase 5 does not add an admin UI or admin log screen. Admin visibility is deferred to Phase 6 `ADMIN-04`; the Phase 5 deliverable is durable backend records that Phase 6 can surface.
 
 ## Environment Availability
 
