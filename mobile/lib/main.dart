@@ -1,8 +1,21 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:mobile/config/app_config.dart';
+import 'package:mobile/models/call_state.dart';
+import 'package:mobile/screens/calls/active_call_screen.dart';
+import 'package:mobile/screens/calls/call_result_screen.dart';
+import 'package:mobile/screens/calls/incoming_call_screen.dart';
+import 'package:mobile/screens/calls/outgoing_call_screen.dart';
+import 'package:mobile/screens/conversation_history_screen.dart';
+import 'package:mobile/screens/conversation_screen.dart';
 import 'package:mobile/screens/recognition_screen.dart';
+import 'package:mobile/services/call_api_service.dart';
+import 'package:mobile/services/call_signaling_service.dart';
+import 'package:mobile/services/livekit_call_service.dart';
+import 'package:mobile/services/push_notification_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+// Global navigator key for push notification routing
+final navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,26 +27,39 @@ void main() async {
   final prefs = await SharedPreferences.getInstance();
   final authToken = prefs.getString('auth_token') ?? '';
 
-  runApp(VSLBridgeApp(
-    config: config,
-    authToken: authToken,
-  ));
+  // Initialize PushNotificationService before runApp
+  final pushService = PushNotificationService(
+    baseUrl: config.httpUrl,
+    authToken: authToken.isNotEmpty ? authToken : null,
+  );
+  await pushService.initialize(navigatorKey);
+
+  runApp(
+    VSLBridgeApp(
+      config: config,
+      authToken: authToken,
+      pushService: pushService,
+    ),
+  );
 }
 
 class VSLBridgeApp extends StatelessWidget {
   final AppConfig config;
   final String authToken;
+  final PushNotificationService pushService;
 
   const VSLBridgeApp({
     super.key,
     required this.config,
     required this.authToken,
+    required this.pushService,
   });
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'VSL Bridge',
+      navigatorKey: navigatorKey,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
@@ -41,11 +67,87 @@ class VSLBridgeApp extends StatelessWidget {
       home: HomeScreen(config: config, authToken: authToken),
       routes: {
         '/recognition': (context) => RecognitionScreen(
-              serverUrl: config.serverUrl,
-              serverPort: config.serverPort,
-              authToken: authToken,
-              config: config,
-            ),
+          serverUrl: config.serverUrl,
+          serverPort: config.serverPort,
+          authToken: authToken,
+          config: config,
+        ),
+        '/conversation': (context) =>
+            ConversationScreen(config: config, authToken: authToken),
+        '/history': (context) => const ConversationHistoryScreen(),
+      },
+      onGenerateRoute: (settings) {
+        switch (settings.name) {
+          case '/calls/incoming':
+            final args = settings.arguments as Map<String, dynamic>?;
+            final callId = args?['callId'] as int? ?? 0;
+            final fromUserName = args?['fromUserName'] as String?;
+            return MaterialPageRoute(
+              builder: (_) => IncomingCallScreen(
+                callApiService: CallApiService(
+                  baseUrl: config.httpUrl,
+                  authToken: authToken,
+                ),
+                callId: callId,
+                fromUserName: fromUserName,
+              ),
+            );
+
+          case '/calls/outgoing':
+            final args = settings.arguments as Map<String, dynamic>?;
+            final outgoingCallId = args?['callId'] as int? ?? 0;
+            final calleeName = args?['calleeName'] as String?;
+            return MaterialPageRoute(
+              builder: (_) => OutgoingCallScreen(
+                callApiService: CallApiService(
+                  baseUrl: config.httpUrl,
+                  authToken: authToken,
+                ),
+                callSignalingService: CallSignalingService(
+                  websocketUrl: config.websocketUrl,
+                  authToken: authToken,
+                ),
+                callId: outgoingCallId,
+                calleeName: calleeName,
+              ),
+            );
+
+          case '/calls/active':
+            final args = settings.arguments as Map<String, dynamic>?;
+            final callSession = args?['callSession'] as CallSession?;
+            if (callSession == null) {
+              return MaterialPageRoute(
+                builder: (_) => const Scaffold(
+                  body: Center(child: Text('No call session provided')),
+                ),
+              );
+            }
+            return MaterialPageRoute(
+              builder: (_) => ActiveCallScreen(
+                liveKitCallService: LiveKitCallService(),
+                callApiService: CallApiService(
+                  baseUrl: config.httpUrl,
+                  authToken: authToken,
+                ),
+                callSession: callSession,
+                liveKitUrl: config.liveKitUrl,
+              ),
+            );
+
+          case '/calls/result':
+            final args = settings.arguments as Map<String, dynamic>?;
+            final callState = args?['callState'] as CallState? ?? CallState.ended;
+            final callerName = args?['callerName'] as String?;
+            return MaterialPageRoute(
+              builder: (_) => CallResultScreen(
+                callState: callState,
+                callerName: callerName,
+              ),
+            );
+
+          default:
+            return null;
+        }
       },
     );
   }
@@ -55,11 +157,7 @@ class HomeScreen extends StatelessWidget {
   final AppConfig config;
   final String authToken;
 
-  const HomeScreen({
-    super.key,
-    required this.config,
-    required this.authToken,
-  });
+  const HomeScreen({super.key, required this.config, required this.authToken});
 
   @override
   Widget build(BuildContext context) {
@@ -86,17 +184,50 @@ class HomeScreen extends StatelessWidget {
             ),
             const SizedBox(height: 32),
             if (isLoggedIn)
-              ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.of(context).pushNamed('/recognition');
-                },
-                icon: const Icon(Icons.handshake),
-                label: const Text('Start Sign Recognition'),
-                style: ElevatedButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                  textStyle: const TextStyle(fontSize: 18),
-                ),
+              Column(
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.of(context).pushNamed('/conversation');
+                    },
+                    icon: const Icon(Icons.forum),
+                    label: const Text('Start Conversation'),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 32,
+                        vertical: 16,
+                      ),
+                      textStyle: const TextStyle(fontSize: 18),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.of(context).pushNamed('/calls/incoming', arguments: {
+                        'callId': 0,
+                        'fromUserName': 'Demo Caller',
+                      });
+                    },
+                    icon: const Icon(Icons.videocam),
+                    label: const Text('Start video call'),
+                  ),
+                  const SizedBox(height: 12),
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.of(context).pushNamed('/recognition');
+                    },
+                    icon: const Icon(Icons.back_hand),
+                    label: const Text('Sign Recognition'),
+                  ),
+                  const SizedBox(height: 12),
+                  TextButton.icon(
+                    onPressed: () {
+                      Navigator.of(context).pushNamed('/history');
+                    },
+                    icon: const Icon(Icons.history),
+                    label: const Text('History'),
+                  ),
+                ],
               )
             else
               Column(
@@ -106,15 +237,19 @@ class HomeScreen extends StatelessWidget {
                       // Navigate to login (to be implemented)
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('Login not yet implemented. Please add auth token manually.'),
+                          content: Text(
+                            'Login not yet implemented. Please add auth token manually.',
+                          ),
                         ),
                       );
                     },
                     icon: const Icon(Icons.login),
                     label: const Text('Login'),
                     style: ElevatedButton.styleFrom(
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 32,
+                        vertical: 16,
+                      ),
                       textStyle: const TextStyle(fontSize: 18),
                     ),
                   ),
