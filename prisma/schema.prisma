@@ -16,14 +16,15 @@ model User {
   updatedAt    DateTime  @updatedAt
 
   // Relations
-  refreshTokens     RefreshToken[]
-  emergencyContacts EmergencyContact[]
-  deviceTokens      DeviceToken[]
-  notifications     Notification[]
-  sentSosAlerts     SOSAlert[] @relation("SOSAlertSender")
-  sosAlertReceivers SOSAlertReceiver[]
-  callerCalls       CallSession[] @relation("CallSessionCaller")
-  calleeCalls       CallSession[] @relation("CallSessionCallee")
+  refreshTokens              RefreshToken[]
+  emergencyContacts          EmergencyContact[]
+  linkedEmergencyContacts    EmergencyContact[] @relation("EmergencyContactLinkedUser")
+  deviceTokens               DeviceToken[]
+  notifications              Notification[]
+  sentSosAlerts              SOSAlert[] @relation("SOSAlertSender")
+  sosAlertReceivers          SOSAlertReceiver[]
+  callerCalls                CallSession[] @relation("CallSessionCaller")
+  calleeCalls                CallSession[] @relation("CallSessionCallee")
 
   @@map("users")
 }
@@ -48,13 +49,21 @@ enum UserType {
 }
 
 model EmergencyContact {
-  id        Int      @id @default(autoincrement())
-  name      String
-  phone     String
-  userId    Int
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
+  id           Int      @id @default(autoincrement())
+  name         String
+  phone        String
+  phoneE164    String?
+  isActive     Boolean  @default(true)
+  userId       Int
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  linkedUserId Int?
+  linkedUser   User?    @relation("EmergencyContactLinkedUser", fields: [linkedUserId], references: [id], onDelete: SetNull)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  attempts     SosAlertAttempt[]
 
+  @@index([userId])
+  @@index([linkedUserId])
   @@map("emergency_contacts")
 }
 
@@ -85,15 +94,27 @@ model Notification {
 }
 
 model SOSAlert {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  user      User     @relation("SOSAlertSender", fields: [userId], references: [id], onDelete: Cascade)
-  location  String?
-  status    SOSStatus @default(ACTIVE)
-  createdAt DateTime  @default(now())
+  id                       Int       @id @default(autoincrement())
+  userId                   Int
+  user                     User      @relation("SOSAlertSender", fields: [userId], references: [id], onDelete: Cascade)
+  location                 String?
+  latitude                 Float?
+  longitude                Float?
+  locationAccuracyMeters   Float?
+  locationCapturedAt       DateTime?
+  locationLabel            String?
+  smsBody                  String?
+  idempotencyKey           String?   @unique
+  sentAt                   DateTime?
+  nativeFallbackOpenedAt   DateTime?
+  closedAt                 DateTime?
+  status                   SOSStatus @default(ACTIVE)
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
 
   // Emergency contacts who were notified
   receivers SOSAlertReceiver[] @relation("SOSAlertReceiverRelation")
+  attempts  SosAlertAttempt[]
 
   @@map("sos_alerts")
 }
@@ -114,6 +135,66 @@ enum SOSStatus {
   ACTIVE
   RESOLVED
   CANCELLED
+  SENDING
+  SENT
+  PARTIAL_FAILED
+  NATIVE_FALLBACK
+  FAILED
+}
+
+enum SOSDeliveryChannel {
+  PROVIDER_SMS
+  NATIVE_SMS
+  PUSH
+  SOCKET
+  DIALER
+}
+
+enum SOSAttemptStatus {
+  PROVIDER_QUEUED
+  PROVIDER_SENT
+  PROVIDER_DELIVERED
+  PROVIDER_FAILED
+  PROVIDER_UNDELIVERED
+  NATIVE_COMPOSER_OPENED
+  NATIVE_COMPOSER_FAILED
+  PUSH_SENT
+  PUSH_FAILED
+  SOCKET_EMITTED
+  DIALER_OPENED
+}
+
+model SosAlertAttempt {
+  id                   Int                @id @default(autoincrement())
+  sosAlertId           Int
+  sosAlert             SOSAlert           @relation(fields: [sosAlertId], references: [id], onDelete: Cascade)
+  emergencyContactId   Int?
+  emergencyContact     EmergencyContact?  @relation(fields: [emergencyContactId], references: [id], onDelete: SetNull)
+  recipientName        String?
+  recipientPhoneE164   String?
+  linkedUserId         Int?
+  channel              SOSDeliveryChannel
+  provider             String?
+  providerMessageSid   String?
+  providerStatus       String?
+  status               SOSAttemptStatus
+  errorCode            String?
+  errorMessage         String?
+  providerResponse     Json?
+  openedAt             DateTime?
+  queuedAt             DateTime?
+  sentAt               DateTime?
+  deliveredAt          DateTime?
+  failedAt             DateTime?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  @@index([sosAlertId])
+  @@index([emergencyContactId])
+  @@index([linkedUserId])
+  @@index([status])
+  @@index([providerMessageSid])
+  @@map("sos_alert_attempts")
 }
 
 enum CallState {

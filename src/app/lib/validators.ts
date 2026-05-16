@@ -28,7 +28,7 @@ export const SynthesizeSchema = z.object({
 export const RegisterTokenSchema = z.object({
   token: z.string().min(1, 'Device token is required'),
   platform: z.enum(['ios', 'android', 'web']),
-  userId: z.number().int().positive(),
+  userId: z.number().int().positive().optional(),
 })
 
 export const SendNotificationSchema = z.object({
@@ -47,4 +47,58 @@ export const CreateCallSchema = z.object({
 
 export const CallActionSchema = z.object({
   callId: z.number().int().positive(),
+})
+
+// SOS schemas
+export const CreateSosAlertSchema = z.object({
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
+  locationAccuracyMeters: z.number().optional(),
+  locationLabel: z.enum(['current', 'approximate', 'last_known', 'unavailable']).optional(),
+  locationCapturedAt: z.string().datetime().optional(),
+  idempotencyKey: z.string().max(128).optional(),
+})
+
+export const SosLocationUpdateSchema = z.object({
+  latitude: z.number(),
+  longitude: z.number(),
+  locationAccuracyMeters: z.number().optional(),
+  locationLabel: z.enum(['current', 'approximate', 'last_known', 'unavailable']),
+  locationCapturedAt: z.string().datetime().optional(),
+})
+
+export const SosFallbackSchema = z.object({
+  fallbackType: z.enum(['native_sms_opened', 'native_sms_failed', 'dialer_opened']),
+  attemptIds: z.array(z.number().int()).optional(),
+})
+
+export const EmergencyContactSchema = z.object({
+  name: z.string().min(1).max(100),
+  phone: z.string().min(1).max(20),
+  phoneE164: z.string().regex(/^\+[1-9]\d{1,14}$/).optional(),
+  isActive: z.boolean().optional().default(true),
+  linkedUserId: z.number().int().optional(),
+})
+
+export const UpdateEmergencyContactSchema = EmergencyContactSchema.partial()
+
+export const TwilioStatusCallbackSchema = z.object({
+  MessageSid: z.string(),
+  MessageStatus: z.enum([
+    'queued',
+    'sent',
+    'delivered',
+    'failed',
+    'undelivered',
+    'canceled',
+    'accepted',
+    'scheduled',
+    'read',
+    'partially_delivered',
+    'sending',
+  ]),
+  To: z.string().optional(),
+  From: z.string().optional(),
+  ErrorCode: z.string().optional(),
+  ErrorMessage: z.string().optional(),
 })
