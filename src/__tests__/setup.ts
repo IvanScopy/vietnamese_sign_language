@@ -29,8 +29,15 @@ jest.mock('@/app/lib/db', () => ({
     deviceToken: {
       upsert: jest.fn(),
     },
+    callSession: {
+      create: jest.fn(),
+      findUnique: jest.fn(),
+      updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+      count: jest.fn(),
+    },
     $queryRaw: jest.fn(),
     $executeRaw: jest.fn(),
+    $transaction: jest.fn(async (fn) => fn),
   },
 }))
 

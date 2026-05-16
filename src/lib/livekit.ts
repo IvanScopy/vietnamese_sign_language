@@ -6,7 +6,7 @@ export interface LiveKitTokenParams {
   userId: number
 }
 
-export function generateLiveKitToken(params: LiveKitTokenParams): string {
+export async function generateLiveKitToken(params: LiveKitTokenParams): Promise<string> {
   const token = new AccessToken(
     process.env.LIVEKIT_API_KEY!,
     process.env.LIVEKIT_API_SECRET!,
@@ -23,10 +23,10 @@ export function generateLiveKitToken(params: LiveKitTokenParams): string {
     canSubscribe: true,
   })
 
-  return token.toJwt()
+  return await token.toJwt()
 }
 
-export function generateLiveKitRoomToken(roomName: string): string {
+export async function generateLiveKitRoomToken(roomName: string): Promise<string> {
   const token = new AccessToken(
     process.env.LIVEKIT_API_KEY!,
     process.env.LIVEKIT_API_SECRET!,
@@ -38,5 +38,5 @@ export function generateLiveKitRoomToken(roomName: string): string {
     room: roomName,
   })
 
-  return token.toJwt()
+  return await token.toJwt()
 }
