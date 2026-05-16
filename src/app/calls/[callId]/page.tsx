@@ -16,6 +16,7 @@ export interface CallData {
   calleeId: number
   callerName?: string
   calleeName?: string
+  viewerRole?: 'caller' | 'callee'
 }
 
 const terminalStates: CallState[] = ['ENDED', 'MISSED', 'REJECTED', 'CANCELLED', 'BUSY', 'FAILED']
@@ -83,6 +84,17 @@ export async function acceptRingingCall(callId: number): Promise<string> {
   return data.token || data.calleeToken
 }
 
+export async function cancelRingingCall(callId: number): Promise<void> {
+  const response = await fetch(`/api/calls/${callId}/cancel`, {
+    method: 'POST',
+    credentials: 'include',
+  })
+
+  if (!response.ok) {
+    throw new Error('Failed to cancel call')
+  }
+}
+
 export default function CallPage() {
   const params = useParams()
   const router = useRouter()
@@ -97,7 +109,14 @@ export default function CallPage() {
   const [callerName, setCallerName] = useState('')
 
   // Handle state query param (for post-call result navigation)
-  const stateParam = searchParams.get('state') as CallState | null
+  const rawStateParam = searchParams.get('state')
+  const normalizedStateParam = rawStateParam?.toUpperCase() as
+    | CallState
+    | undefined
+  const stateParam =
+    normalizedStateParam && terminalStates.includes(normalizedStateParam)
+      ? normalizedStateParam
+      : null
 
   // Fetch call data and token
   useEffect(() => {
@@ -113,9 +132,13 @@ export default function CallPage() {
         setCallData(data)
 
         if (data.state === 'RINGING') {
-          // Show incoming modal for callee, ringing display for caller
-          setShowIncomingModal(true)
-          setCallerName(data.callerName || 'Unknown caller')
+          if (data.viewerRole === 'callee') {
+            // Show incoming modal for callee, ringing display for caller
+            setShowIncomingModal(true)
+            setCallerName(data.callerName || 'Unknown caller')
+          } else {
+            setShowIncomingModal(false)
+          }
         } else if (data.state === 'ACTIVE') {
           setToken(activeToken)
         } else if (terminalStates.includes(data.state)) {
@@ -164,8 +187,20 @@ export default function CallPage() {
     }
   }, [callId, router])
 
+  const handleCancel = useCallback(async () => {
+    if (!callId) return
+
+    try {
+      await cancelRingingCall(callId)
+    } catch (err) {
+      console.error('Failed to cancel call:', err)
+    } finally {
+      router.push('/calls')
+    }
+  }, [callId, router])
+
   const handleEnd = useCallback(() => {
-    router.push(`/calls/${callId}?state=ended`)
+    router.push(`/calls/${callId}?state=ENDED`)
   }, [callId, router])
 
   const handleHome = useCallback(() => {
@@ -316,9 +351,7 @@ export default function CallPage() {
         </p>
         <button
           type="button"
-          onClick={() => {
-            router.push('/calls')
-          }}
+          onClick={handleCancel}
           style={{
             height: 48,
             padding: '0 32px',

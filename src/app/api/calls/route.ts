@@ -1,23 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { verifyAccessToken } from '@/app/lib/auth'
 import { CreateCallSchema } from '@/app/lib/validators'
 import { createCall, checkBusy } from '@/lib/calls'
 import { emitCallEvent } from '@/app/lib/call-signaling'
 import { sendCallPushNotification } from '@/app/lib/push'
 import { prisma } from '@/app/lib/db'
+import { getAuthenticatedUser } from '@/app/lib/request-auth'
 
 export async function POST(request: NextRequest) {
   try {
-    // Extract callerId from JWT auth
-    const accessToken = request.cookies.get('accessToken')?.value
-    if (!accessToken) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const payload = await verifyAccessToken(accessToken)
+    const payload = await getAuthenticatedUser(request)
     if (!payload) {
       return NextResponse.json(
-        { error: 'Invalid or expired token' },
+        { error: 'Unauthorized' },
         { status: 401 },
       )
     }

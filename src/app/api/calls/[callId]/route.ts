@@ -1,40 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { verifyAccessToken } from '@/app/lib/auth'
 import { prisma } from '@/app/lib/db'
-
-function getAccessToken(request: NextRequest): string | null {
-  const cookieToken = request.cookies.get('accessToken')?.value
-  if (cookieToken) return cookieToken
-
-  const authorization = request.headers.get('authorization')
-  if (authorization?.startsWith('Bearer ')) {
-    return authorization.slice('Bearer '.length)
-  }
-
-  return null
-}
+import { getAuthenticatedUser } from '@/app/lib/request-auth'
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ callId: string }> },
 ) {
   try {
-    const accessToken = getAccessToken(request)
-    if (!accessToken) {
+    const payload = await getAuthenticatedUser(request)
+    if (!payload) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const payload = await verifyAccessToken(accessToken)
-    if (!payload) {
-      return NextResponse.json(
-        { error: 'Invalid or expired token' },
-        { status: 401 },
-      )
+    const { callId: callIdStr } = await params
+    if (!/^\d+$/.test(callIdStr)) {
+      return NextResponse.json({ error: 'Invalid call ID' }, { status: 400 })
     }
 
-    const { callId: callIdStr } = await params
-    const callId = parseInt(callIdStr, 10)
-    if (isNaN(callId)) {
+    const callId = Number(callIdStr)
+    if (!Number.isSafeInteger(callId) || callId < 1) {
       return NextResponse.json({ error: 'Invalid call ID' }, { status: 400 })
     }
 
@@ -69,6 +53,7 @@ export async function GET(
       calleeId: callSession.calleeId,
       callerName: callSession.caller?.name ?? null,
       calleeName: callSession.callee?.name ?? null,
+      viewerRole: callSession.calleeId === payload.userId ? 'callee' : 'caller',
       expiresAt: callSession.expiresAt,
       acceptedAt: callSession.acceptedAt,
       endedAt: callSession.endedAt,

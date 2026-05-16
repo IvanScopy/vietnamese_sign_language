@@ -107,10 +107,11 @@ class CallSession {
 
   static CallState _parseCallState(String? raw) {
     if (raw == null) return CallState.ringing;
+    final normalized = raw.toLowerCase();
     for (final state in CallState.values) {
-      if (state.name == raw) return state;
+      if (state.name == normalized) return state;
     }
-    return CallState.ringing;
+    return CallState.failed;
   }
 
   @override

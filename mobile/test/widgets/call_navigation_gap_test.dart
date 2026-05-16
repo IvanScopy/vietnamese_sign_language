@@ -56,6 +56,17 @@ CallSession createCallSession({int callId = 42, String? fromUserName}) {
 }
 
 void main() {
+  test('CallSession parses backend uppercase call states', () {
+    final session = CallSession.fromJson({
+      'callId': 42,
+      'roomName': 'vsl-room',
+      'fromUserId': 7,
+      'state': 'ACTIVE',
+    });
+
+    expect(session.state, CallState.active);
+  });
+
   testWidgets('/calls/active defaults currentUserType for ActiveCallScreen', (
     tester,
   ) async {

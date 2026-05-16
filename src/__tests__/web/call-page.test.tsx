@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, jest, test } from '@jest/globals'
 import {
   acceptRingingCall,
+  cancelRingingCall,
   fetchCallPageData,
 } from '@/app/calls/[callId]/page'
 
@@ -93,6 +94,18 @@ describe('Web Call Page', () => {
       credentials: 'include',
     })
     expect(token).toBe('accepted-token')
+  })
+
+  test('RINGING cancel action POSTs cancel', async () => {
+    const fetchMock = global.fetch as jest.MockedFunction<typeof fetch>
+    fetchMock.mockResolvedValueOnce(jsonResponse({ success: true }))
+
+    await cancelRingingCall(42)
+
+    expect(fetchMock).toHaveBeenCalledWith('/api/calls/42/cancel', {
+      method: 'POST',
+      credentials: 'include',
+    })
   })
 
   test('terminal state from API does not fetch a token', async () => {

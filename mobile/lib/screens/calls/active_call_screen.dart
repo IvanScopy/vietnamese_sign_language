@@ -76,22 +76,37 @@ class _ActiveCallScreenState extends State<ActiveCallScreen> {
   }
 
   Future<void> _connectToRoom() async {
-    final token = widget.callSession.token;
+    var token = widget.callSession.token;
     if (token == null || token.isEmpty) {
-      debugPrint('[ActiveCall] No token available');
-      return;
+      try {
+        token = await widget.callApiService.getToken(widget.callSession.callId);
+      } catch (e) {
+        debugPrint('[ActiveCall] Failed to fetch LiveKit token: $e');
+        if (!mounted) return;
+        setState(() {
+          _connectionStatus = 'Connection failed';
+        });
+        return;
+      }
     }
 
     try {
-      _room = await widget.liveKitCallService.connect(
+      final room = await widget.liveKitCallService.connect(
         widget.liveKitUrl,
         token,
       );
 
-      if (!mounted) return;
+      if (!mounted) {
+        unawaited(widget.liveKitCallService.dispose());
+        return;
+      }
+
+      _room = room;
 
       // Listen for room events
-      _eventsSubscription = widget.liveKitCallService.events.listen(_onRoomEvent);
+      _eventsSubscription = widget.liveKitCallService.events.listen(
+        _onRoomEvent,
+      );
 
       setState(() {
         _connectionStatus = 'Connected';
@@ -127,9 +142,20 @@ class _ActiveCallScreenState extends State<ActiveCallScreen> {
   Future<void> _onEndCall() async {
     try {
       await widget.callApiService.endCall(widget.callSession.callId);
-    } catch (_) {
-      // Best effort
+    } on CallApiException catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
+      return;
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to end call: $error')));
+      return;
     }
+
     await widget.liveKitCallService.disconnect();
     if (mounted) {
       Navigator.of(context).pushReplacementNamed(
@@ -166,6 +192,7 @@ class _ActiveCallScreenState extends State<ActiveCallScreen> {
     }
     _sttService.dispose();
     _ttsService.dispose();
+    unawaited(widget.liveKitCallService.dispose());
     super.dispose();
   }
 
@@ -197,7 +224,10 @@ class _ActiveCallScreenState extends State<ActiveCallScreen> {
               top: 48,
               left: 16,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.black54,
                   borderRadius: BorderRadius.circular(16),
@@ -218,10 +248,7 @@ class _ActiveCallScreenState extends State<ActiveCallScreen> {
                     const SizedBox(width: 6),
                     Text(
                       _connectionStatus!,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                      ),
+                      style: const TextStyle(color: Colors.white, fontSize: 14),
                     ),
                   ],
                 ),
@@ -271,7 +298,10 @@ class _ActiveCallScreenState extends State<ActiveCallScreen> {
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [Colors.transparent, Colors.black.withValues(alpha: 0.8)],
+                  colors: [
+                    Colors.transparent,
+                    Colors.black.withValues(alpha: 0.8),
+                  ],
                 ),
               ),
               child: Row(
@@ -296,7 +326,11 @@ class _ActiveCallScreenState extends State<ActiveCallScreen> {
                     child: FloatingActionButton(
                       backgroundColor: const Color(0xFFDC2626),
                       onPressed: _onEndCall,
-                      child: const Icon(Icons.call_end, size: 28, color: Colors.white),
+                      child: const Icon(
+                        Icons.call_end,
+                        size: 28,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                   // Placeholder for switch camera (to be implemented)
@@ -357,9 +391,7 @@ class _LocalPreviewState extends State<_LocalPreview> {
     if (track != null) {
       return VideoTrackRenderer(track);
     }
-    return const Center(
-      child: Icon(Icons.videocam_off, color: Colors.white54),
-    );
+    return const Center(child: Icon(Icons.videocam_off, color: Colors.white54));
   }
 }
 
@@ -402,7 +434,8 @@ class _RemoteVideoViewState extends State<_RemoteVideoView> {
   void _findRemoteTrack() {
     for (final participant in widget.room.remoteParticipants.values) {
       for (final pub in participant.trackPublications.values) {
-        if (pub.source != TrackSource.screenShareVideo && pub.track is VideoTrack) {
+        if (pub.source != TrackSource.screenShareVideo &&
+            pub.track is VideoTrack) {
           setState(() {
             _remoteTrack = pub.track as VideoTrack;
           });
@@ -473,10 +506,7 @@ class _ControlButton extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           label,
-          style: const TextStyle(
-            color: Colors.white70,
-            fontSize: 12,
-          ),
+          style: const TextStyle(color: Colors.white70, fontSize: 12),
         ),
       ],
     );
@@ -497,11 +527,7 @@ class _PermissionErrorScreen extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
-              Icons.error_outline,
-              size: 64,
-              color: Colors.red,
-            ),
+            const Icon(Icons.error_outline, size: 64, color: Colors.red),
             const SizedBox(height: 16),
             const Text(
               'Camera or microphone unavailable',

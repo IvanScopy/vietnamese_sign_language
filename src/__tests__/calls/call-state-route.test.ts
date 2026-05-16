@@ -57,6 +57,16 @@ describe('GET /api/calls/[callId]', () => {
     expect(mockFindUnique).not.toHaveBeenCalled()
   })
 
+  test('returns 400 for partial numeric callId', async () => {
+    const response = await GET(
+      makeRequest({ cookie: 'accessToken=test-token' }),
+      callParams('42abc'),
+    )
+
+    expect(response.status).toBe(400)
+    expect(mockFindUnique).not.toHaveBeenCalled()
+  })
+
   test('returns 404 when the call is missing', async () => {
     mockFindUnique.mockResolvedValue(null)
 
@@ -108,6 +118,7 @@ describe('GET /api/calls/[callId]', () => {
       roomName: 'vsl-call-room',
       callerName: 'Caller User',
       calleeName: 'Callee User',
+      viewerRole: 'caller',
     })
   })
 

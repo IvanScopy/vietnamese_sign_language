@@ -1,31 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { verifyAccessToken } from '@/app/lib/auth'
 import { cancelCall } from '@/lib/calls'
 import { emitCallEvent } from '@/app/lib/call-signaling'
 import { prisma } from '@/app/lib/db'
+import { getAuthenticatedUser } from '@/app/lib/request-auth'
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ callId: string }> },
 ) {
   try {
-    const accessToken = request.cookies.get('accessToken')?.value
-    if (!accessToken) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const payload = await verifyAccessToken(accessToken)
+    const payload = await getAuthenticatedUser(request)
     if (!payload) {
       return NextResponse.json(
-        { error: 'Invalid or expired token' },
+        { error: 'Unauthorized' },
         { status: 401 },
       )
     }
     const userId = payload.userId
 
     const { callId: callIdStr } = await params
-    const callId = parseInt(callIdStr, 10)
-    if (isNaN(callId)) {
+    if (!/^\d+$/.test(callIdStr)) {
+      return NextResponse.json({ error: 'Invalid call ID' }, { status: 400 })
+    }
+    const callId = Number(callIdStr)
+    if (!Number.isSafeInteger(callId) || callId < 1) {
       return NextResponse.json({ error: 'Invalid call ID' }, { status: 400 })
     }
 
