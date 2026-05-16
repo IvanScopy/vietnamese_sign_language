@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Phase 04 complete
-last_updated: "2026-05-16T12:14:08.517Z"
+status: Phase 05 complete
+last_updated: "2026-05-16T18:00:00.000Z"
 progress:
   total_phases: 6
-  completed_phases: 4
-  total_plans: 25
-  completed_plans: 23
-  percent: 67
+  completed_phases: 5
+  total_plans: 33
+  completed_plans: 32
+  percent: 83
 ---
 
 # Project State — VSL Bridge
@@ -18,7 +18,7 @@ progress:
 
 **Milestone**: v1.0  
 **Current source of truth**: `.planning/ROADMAP.md` + `.planning/REQUIREMENTS.md`  
-**Phase**: 03 (Face-to-Face Conversation & History) — completed  
+**Phase**: 05 (SOS Emergency & Safety) — completed  
 **Last reconciled**: 2026-05-16  
 
 Avatar signing is explicitly deferred to v2+. Do not plan or execute avatar work in v1 unless the roadmap is changed again.
@@ -32,7 +32,7 @@ Avatar signing is explicitly deferred to v2+. Do not plan or execute avatar work
 | 2 | Sign Recognition MVP | Implemented, Validation Pending | 2026-05-08 | — |
 | 3 | Face-to-Face Conversation & History | Completed | 2026-05-16 | 2026-05-16 |
 | 4 | Video Calling | Not Started | — | — |
-| 5 | SOS Emergency & Safety | Not Started | — | — |
+| 5 | SOS Emergency & Safety | Completed | 2026-05-16 | 2026-05-16 |
 | 6 | App, Dictionary & Admin Readiness | Not Started | — | — |
 
 ## Completed Plans
@@ -51,13 +51,21 @@ Avatar signing is explicitly deferred to v2+. Do not plan or execute avatar work
 | 02 | 03 | TTS Service Integration | 2026-05-10 |
 | 02 | 04 | Flutter Frontend Integration | 2026-05-10 |
 | 03 | 01 | Conversation Mode & Local History | 2026-05-16 |
+| 05 | 01 | SOS Package Dependencies | 2026-05-16 |
+| 05 | 02 | SOS Prisma Schema & Validators | 2026-05-16 |
+| 05 | 03 | Auth Helper, Emergency Contacts, Push Token Fix | 2026-05-16 |
+| 05 | 04 | SMS Provider, SOS Core Logic & Alert API | 2026-05-16 |
+| 05 | 05 | Late GPS, Fallback, Twilio Callback & Push/Socket Fanout | 2026-05-16 |
+| 05 | 06 | Flutter SOS API Client & Location Services | 2026-05-16 |
 | 05 | 07 | SOS Screen, Platform Service & Push Notifications | 2026-05-16 |
+| 05 | 08 | Manual SOS Protocol & Verification | 2026-05-16 |
 
 ## Requirements Summary
 
 - **v1 roadmap phases**: 6
 - **Completed foundation capabilities**: ACC-01 through ACC-04, COMM-02, COMM-03, PLAT-01 through PLAT-03
 - **Completed conversation capabilities**: COMM-04, HIST-01 through HIST-04
+- **Completed SOS capabilities**: EMERG-01, EMERG-02, MOB-04, MOB-05, NOTIF-02
 - **Implemented but not fully validated**: COMM-01, COMM-06, MOB-03
 - **Deferred to v2+**: AVATAR-01 through AVATAR-03
 
@@ -97,8 +105,9 @@ Avatar signing is explicitly deferred to v2+. Do not plan or execute avatar work
 ## Next Actions
 
 1. Run physical-device validation for Phase 2 recognition and Phase 3 conversation mode.
-2. Start Phase 4 with the normal GSD workflow: `$gsd-discuss-phase 4` → `$gsd-plan-phase 4` → `$gsd-execute-phase 4`.
-3. Keep avatar work out of v1 planning unless the roadmap is explicitly changed.
+2. Start Phase 6 (App, Dictionary & Admin Readiness): `$gsd-discuss-phase 6` → `$gsd-plan-phase 6` → `$gsd-execute-phase 6`.
+3. Note: Phase 4 (Video Calling) is still not started — consider sequencing vs Phase 6.
+4. Keep avatar work out of v1 planning unless the roadmap is explicitly changed.
 
 ## Roadmap Evolution
 
@@ -106,8 +115,8 @@ Avatar signing is explicitly deferred to v2+. Do not plan or execute avatar work
 |------|-------|--------|------|
 | 2026-05-12 | All | Reconciled | Avatar moved to v2+; v1 roadmap rewritten around subtitles/text/TTS, conversation mode, video calls, SOS, dictionary/admin readiness |
 | 2026-05-16 | Phase 3 | Completed | One-device conversation mode and local text history implemented |
-| 2026-05-16 | Phase 5 Plan 07 | Completed | SOS screen, platform service (tel:115/SMS), push routing implemented |
+| 2026-05-16 | Phase 5 | Completed | Full SOS system: Twilio provider SMS, GPS location handling, emergency contacts CRUD, native SMS/dialer fallback, push/socket fanout, SOS screen |
 
 ---
 
-*Last updated: 2026-05-16 — Phase 5 Plan 07 completed; SOS screen, platform service, push notification routing.*
+*Last updated: 2026-05-16 — Phase 5 complete: SOS Emergency & Safety (8 plans, 84 automated tests passing).*
