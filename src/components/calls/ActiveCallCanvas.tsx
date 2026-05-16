@@ -237,17 +237,22 @@ function CallContent({
           )}
         </div>
 
-        {/* Subtitle overlay */}
-        <SubtitleOverlay subtitle={subtitle} speakerName={subtitle ? 'Speaker' : undefined} />
-
-        {/* Sign draft overlay (placeholder — Plan 05 will wire real data) */}
+        {/* Sign draft overlay — positioned above subtitle overlay */}
         {draftText && (
           <SignDraftOverlay
             draftText={draftText}
             confidence={confidence}
             onConfirm={() => setDraftText('')}
+            onConfirmAndPlay={() => {
+              // v1 placeholder: TTS synthesis will be wired when backend is ready
+              console.log('Confirm & Play:', draftText)
+              setDraftText('')
+            }}
           />
         )}
+
+        {/* Subtitle overlay — positioned at bottom of video, below sign draft */}
+        <SubtitleOverlay subtitle={subtitle} speakerName={subtitle ? 'Speaker' : undefined} />
       </div>
 
       {/* Audio renderer for LiveKit */}
