@@ -135,6 +135,18 @@ Plans:
 
 **Status:** Not Started
 
+**Plans:** 8 plans
+
+Plans:
+- [ ] 05-01-PLAN.md — Dependency legitimacy checkpoint and SOS package installation
+- [ ] 05-02-PLAN.md — Prisma SOS persistence contracts, validators, mocks, and required schema push
+- [ ] 05-03-PLAN.md — Auth-derived token registration and emergency contact phone-number CRUD
+- [ ] 05-04-PLAN.md — Server-authoritative SOS create API with Twilio provider SMS fanout
+- [ ] 05-05-PLAN.md — Late GPS, native fallback records, Twilio callbacks, and SOS notification fanout
+- [ ] 05-06-PLAN.md — Flutter SOS API and location services with platform permission config
+- [ ] 05-07-PLAN.md — Mobile SOS home entry, hold/countdown/status UI, native handoffs, and push routing
+- [ ] 05-08-PLAN.md — Automated verification gate and physical-device SOS safety protocol
+
 **Success Criteria:**
 1. Deaf users can configure emergency contact phone numbers.
 2. SOS flow requests and uses device GPS location.
