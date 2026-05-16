@@ -36,13 +36,21 @@ dependencies:
   cupertino_icons: ^1.0.8
 
   # Sign Language Recognition
-  flutter_mediapipe: ^0.0.7
+  # Using native Android MediaPipe Holistic via custom plugin
   socket_io_client: ^3.1.4
   camera: ^0.12.0+1
   json_annotation: ^4.11.0
   permission_handler: ^12.0.1
   audioplayers: ^6.4.0
   shared_preferences: ^2.3.3
+  http: ^1.6.0
+  record: ^6.2.0
+  path_provider: ^2.1.5
+
+  # Video Calling
+  livekit_client: ^2.7.0
+  firebase_core: ^4.9.0
+  firebase_messaging: ^16.2.2
 
 dev_dependencies:
   flutter_test:
@@ -69,11 +77,10 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
-  # MediaPipe Hand Landmarker model
-  # Download from: https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task
-  # Place the file in assets/hand_landmarker.task
+  # MediaPipe task models.
   assets:
     - assets/hand_landmarker.task
+    - assets/pose_landmarker_lite.task
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
