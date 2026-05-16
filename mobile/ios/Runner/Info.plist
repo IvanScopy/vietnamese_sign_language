@@ -26,9 +26,14 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<!-- Location permission for SOS emergency feature -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>SOS sử dụng GPS để gửi vị trí của bạn đến danh bạ khẩn cấp.</string>
 	<!-- Camera permission for sign language recognition -->
 	<key>NSCameraUsageDescription</key>
 	<string>This app uses the camera to detect Vietnamese sign language gestures for real-time communication.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>This app uses the microphone to transcribe Vietnamese speech during face-to-face conversations.</string>
 	<!-- Network permissions -->
 	<key>NSAppTransportSecurity</key>
 	<dict>
@@ -74,6 +79,12 @@
 		<string>UIInterfaceOrientationPortraitUpsideDown</string>
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<!-- URL schemes for url_launcher tel/sms support -->
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>tel</string>
+		<string>sms</string>
 	</array>
 </dict>
 </plist>
