@@ -101,14 +101,31 @@
 
 **Status:** Not Started
 
-**Plans:** 5 plans
+**Plans:** 7 plans
 
 Plans:
+
+**Wave 1**
+
 - [ ] 04-01-PLAN.md — Backend data layer: Prisma CallSession model, call state machine, async LiveKit token fix, test scaffolds
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 04-02-PLAN.md — Backend API endpoints: create/accept/reject/cancel/end/token routes, Socket.io signaling, FCM push helper
 - [ ] 04-03-PLAN.md — Mobile Flutter: call screens (incoming/outgoing/active/result), call services, push notification routing
 - [ ] 04-04-PLAN.md — Web call pages: entry page, dynamic call page, LiveKit room integration, incoming call modal, reusable components
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
 - [ ] 04-05-PLAN.md — Translation surfaces: sign draft overlay, STT subtitles, in-call TTS, transcript save endpoint
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
+- [ ] 04-06-PLAN.md — Gap closure: call-state GET endpoint, web active token flow, validator compile fix
+
+**Wave 5** *(blocked on Wave 4 completion)*
+
+- [ ] 04-07-PLAN.md — Gap closure: mobile active route constructor and outgoing call entry flow
 
 **Success Criteria:**
 1. Registered users can initiate, receive, accept, reject, and end 1:1 calls.
