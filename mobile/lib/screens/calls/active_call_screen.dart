@@ -2,23 +2,32 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:livekit_client/livekit_client.dart';
+import 'package:mobile/config/app_config.dart';
 import 'package:mobile/models/call_state.dart';
+import 'package:mobile/models/user_type.dart';
 import 'package:mobile/services/call_api_service.dart';
+import 'package:mobile/services/call_transcription_service.dart';
 import 'package:mobile/services/livekit_call_service.dart';
+import 'package:mobile/services/sign_recognition_service.dart';
+import 'package:mobile/services/speech_transcription_service.dart';
+import 'package:mobile/widgets/call_translation_overlay.dart';
 
 /// Active call UI with remote video, local preview, and controls.
 ///
 /// Remote video fills the screen via LiveKit VideoTrackRenderer.
 /// Local preview as small top-corner tile.
 /// Bottom control bar: mute mic, camera on/off, switch camera, End call.
+/// Translation overlay positioned above call controls for deaf/hearing communication.
 ///
 /// Handles permission errors with recoverable screen.
-/// Placeholder area reserved at bottom for translation overlays (Plan 05).
 class ActiveCallScreen extends StatefulWidget {
   final LiveKitCallService liveKitCallService;
   final CallApiService callApiService;
   final CallSession callSession;
   final String liveKitUrl;
+  final AppConfig config;
+  final String authToken;
+  final UserType currentUserType;
 
   const ActiveCallScreen({
     super.key,
@@ -26,6 +35,9 @@ class ActiveCallScreen extends StatefulWidget {
     required this.callApiService,
     required this.callSession,
     required this.liveKitUrl,
+    required this.config,
+    required this.authToken,
+    required this.currentUserType,
   });
 
   @override
@@ -41,9 +53,25 @@ class _ActiveCallScreenState extends State<ActiveCallScreen> {
   Timer? _statusTimer;
   StreamSubscription<RoomEvent>? _eventsSubscription;
 
+  late final SignRecognitionService _recognitionService;
+  late final SpeechTranscriptionService _sttService;
+  late final CallTranscriptionService _ttsService;
+  bool _ownsRecognitionService = true;
+
   @override
   void initState() {
     super.initState();
+    _recognitionService = SignRecognitionService(
+      serverUrl: widget.config.serverUrl,
+      serverPort: widget.config.serverPort,
+      authToken: widget.authToken,
+    );
+    _sttService = SpeechTranscriptionService(apiBaseUrl: widget.config.httpUrl);
+    _ttsService = CallTranscriptionService(
+      apiBaseUrl: widget.config.httpUrl,
+      authToken: widget.authToken,
+      sttService: _sttService,
+    );
     _connectToRoom();
   }
 
@@ -133,6 +161,11 @@ class _ActiveCallScreenState extends State<ActiveCallScreen> {
   void dispose() {
     _statusTimer?.cancel();
     _eventsSubscription?.cancel();
+    if (_ownsRecognitionService) {
+      _recognitionService.dispose();
+    }
+    _sttService.dispose();
+    _ttsService.dispose();
     super.dispose();
   }
 
@@ -218,6 +251,15 @@ class _ActiveCallScreenState extends State<ActiveCallScreen> {
             ),
           ),
 
+          // Translation overlay (above call controls)
+          CallTranslationOverlay(
+            recognitionService: _recognitionService,
+            sttService: _sttService,
+            ttsService: _ttsService,
+            currentUserType: widget.currentUserType,
+            authToken: widget.authToken,
+          ),
+
           // Bottom control bar
           Positioned(
             left: 0,
@@ -265,7 +307,6 @@ class _ActiveCallScreenState extends State<ActiveCallScreen> {
                       // TODO: implement camera switching
                     },
                   ),
-                  // Reserved area for translation overlays (Plan 05)
                   const SizedBox(width: 48),
                 ],
               ),

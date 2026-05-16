@@ -147,3 +147,15 @@ model CallSession {
   @@index([state])
   @@map("call_sessions")
 }
+
+model CallTranscript {
+  id        Int      @id @default(autoincrement())
+  callId    Int
+  userId    Int
+  text      String
+  createdAt DateTime @default(now())
+
+  @@index([callId])
+  @@index([userId])
+  @@map("call_transcripts")
+}

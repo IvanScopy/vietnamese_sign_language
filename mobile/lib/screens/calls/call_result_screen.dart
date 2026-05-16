@@ -1,4 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:mobile/config/app_config.dart';
 import 'package:mobile/models/call_state.dart';
 
 /// Shows state-specific UI for call outcomes.
@@ -6,22 +10,117 @@ import 'package:mobile/models/call_state.dart';
 /// States: ended, missed, rejected, cancelled, busy, failed.
 /// Uses UI-SPEC copywriting contract for headlines and body text.
 ///
-/// For ended state: shows "Save text transcript?" prompt.
+/// For ended state: shows "Save text transcript?" prompt with Save/Discard actions.
 /// For failed state: shows "Retry" button.
 /// All states: "Back to home" button.
-class CallResultScreen extends StatelessWidget {
+class CallResultScreen extends StatefulWidget {
   final CallState callState;
   final String? callerName;
+  final int? callId;
+  final AppConfig? config;
+  final String? authToken;
 
   const CallResultScreen({
     super.key,
     required this.callState,
     this.callerName,
+    this.callId,
+    this.config,
+    this.authToken,
   });
 
   @override
+  State<CallResultScreen> createState() => _CallResultScreenState();
+}
+
+class _CallResultScreenState extends State<CallResultScreen> {
+  bool _isSaving = false;
+  bool _isDiscarding = false;
+
+  Future<void> _saveTranscript() async {
+    final callId = widget.callId;
+    final config = widget.config;
+    final authToken = widget.authToken;
+
+    if (callId == null || config == null || authToken == null) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Transcript saving unavailable')),
+      );
+      return;
+    }
+
+    setState(() => _isSaving = true);
+
+    try {
+      final uri = Uri.parse('${config.httpUrl}/api/calls/$callId/transcript');
+      final response = await http.post(
+        uri,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $authToken',
+        },
+        body: jsonEncode({'transcript': ''}),
+      );
+
+      if (!mounted) return;
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Transcript saved successfully'),
+            backgroundColor: Color(0xFF16A34A),
+          ),
+        );
+        // Navigate home after successful save
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to save transcript')),
+        );
+      }
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to save transcript')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isSaving = false);
+      }
+    }
+  }
+
+  Future<void> _discardTranscript() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Discard text transcript?'),
+        content: const Text(
+          'This action cannot be undone. Only confirmed text would have been saved.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: TextButton.styleFrom(foregroundColor: const Color(0xFFDC2626)),
+            child: const Text('Discard'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      Navigator.of(context).popUntil((route) => route.isFirst);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final name = callerName ?? 'Contact';
+    final name = widget.callerName ?? 'Contact';
 
     return Scaffold(
       body: SafeArea(
@@ -30,10 +129,10 @@ class CallResultScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _CallStateIcon(state: callState),
+              _CallStateIcon(state: widget.callState),
               const SizedBox(height: 24),
               Text(
-                _getHeadline(callState),
+                _getHeadline(widget.callState),
                 style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w600,
@@ -42,7 +141,7 @@ class CallResultScreen extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                _getBodyText(callState, name),
+                _getBodyText(widget.callState, name),
                 style: TextStyle(
                   fontSize: 16,
                   color: Colors.grey[600],
@@ -51,7 +150,7 @@ class CallResultScreen extends StatelessWidget {
               ),
               const SizedBox(height: 32),
               // Transcript save prompt for ended state
-              if (callState == CallState.ended) ...[
+              if (widget.callState == CallState.ended) ...[
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
@@ -77,17 +176,36 @@ class CallResultScreen extends StatelessWidget {
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 12),
-                      FilledButton.icon(
-                        onPressed: () {
-                          // TODO: Save transcript
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Transcript saving coming soon'),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // Discard button
+                          OutlinedButton.icon(
+                            onPressed: _isSaving ? null : _discardTranscript,
+                            icon: _isDiscarding
+                                ? const SizedBox.square(
+                                    dimension: 16,
+                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                  )
+                                : const Icon(Icons.delete_outline),
+                            label: const Text('Discard'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: const Color(0xFFDC2626),
                             ),
-                          );
-                        },
-                        icon: const Icon(Icons.save),
-                        label: const Text('Save transcript'),
+                          ),
+                          const SizedBox(width: 12),
+                          // Save button
+                          FilledButton.icon(
+                            onPressed: _isSaving ? null : _saveTranscript,
+                            icon: _isSaving
+                                ? const SizedBox.square(
+                                    dimension: 16,
+                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                  )
+                                : const Icon(Icons.save),
+                            label: const Text('Save transcript'),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -95,7 +213,7 @@ class CallResultScreen extends StatelessWidget {
                 const SizedBox(height: 24),
               ],
               // Retry button for failed state
-              if (callState == CallState.failed) ...[
+              if (widget.callState == CallState.failed) ...[
                 FilledButton.icon(
                   onPressed: () {
                     Navigator.of(context).pop();
