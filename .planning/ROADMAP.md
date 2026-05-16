@@ -17,7 +17,7 @@
 | 1 | Foundation & Authentication | Set up backend, auth, profiles, STT/TTS provider abstraction, and notification infrastructure | ACC-01 through ACC-04, COMM-02, COMM-03, PLAT-01 through PLAT-03 | Completed |
 | 2 | Sign Recognition MVP | Deliver camera-to-text sign recognition pipeline with confidence feedback and TTS handoff | COMM-01, COMM-06, MOB-03 | Implemented, validation pending |
 | 3 | Face-to-Face Conversation & History | Build one-device split-screen conversation mode and local text conversation history | COMM-04, HIST-01 through HIST-04 | Completed |
-| 4 | Video Calling | Add 1:1 video calling with integrated subtitles, sign recognition output, and TTS output | COMM-05, WEB-02, NOTIF-01 | Not Started |
+| 4 | Video Calling | Add 1:1 video calling with integrated subtitles, sign recognition output, and TTS output | COMM-05, WEB-02, NOTIF-01 | In Progress (6/7 plans) |
 | 5 | SOS Emergency & Safety | 6/8 | In Progress|  |
 | 6 | App, Dictionary & Admin Readiness | Finish production app shells, dictionary viewer, web parity, and admin management features | MOB-01, MOB-02, WEB-01, WEB-03, WEB-04, DICT-01 through DICT-04, ADMIN-01 through ADMIN-05 | Not Started |
 
@@ -99,29 +99,29 @@
 
 **Requirements:** COMM-05, WEB-02, NOTIF-01
 
-**Status:** Not Started
+**Status:** In Progress (6/7 plans executed)
 
-**Plans:** 7 plans
+**Plans:** 6/7 plans executed
 
 Plans:
 
 **Wave 1**
 
-- [ ] 04-01-PLAN.md — Backend data layer: Prisma CallSession model, call state machine, async LiveKit token fix, test scaffolds
+- [x] 04-01-PLAN.md — Backend data layer: Prisma CallSession model, call state machine, async LiveKit token fix, test scaffolds
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 04-02-PLAN.md — Backend API endpoints: create/accept/reject/cancel/end/token routes, Socket.io signaling, FCM push helper
-- [ ] 04-03-PLAN.md — Mobile Flutter: call screens (incoming/outgoing/active/result), call services, push notification routing
-- [ ] 04-04-PLAN.md — Web call pages: entry page, dynamic call page, LiveKit room integration, incoming call modal, reusable components
+- [x] 04-02-PLAN.md — Backend API endpoints: create/accept/reject/cancel/end/token routes, Socket.io signaling, FCM push helper
+- [x] 04-03-PLAN.md — Mobile Flutter: call screens (incoming/outgoing/active/result), call services, push notification routing
+- [x] 04-04-PLAN.md — Web call pages: entry page, dynamic call page, LiveKit room integration, incoming call modal, reusable components
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 04-05-PLAN.md — Translation surfaces: sign draft overlay, STT subtitles, in-call TTS, transcript save endpoint
+- [x] 04-05-PLAN.md — Translation surfaces: sign draft overlay, STT subtitles, in-call TTS, transcript save endpoint
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
-- [ ] 04-06-PLAN.md — Gap closure: call-state GET endpoint, web active token flow, validator compile fix
+- [x] 04-06-PLAN.md — Gap closure: call-state GET endpoint, web active token flow, validator compile fix
 
 **Wave 5** *(blocked on Wave 4 completion)*
 
