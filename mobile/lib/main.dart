@@ -8,10 +8,14 @@ import 'package:mobile/screens/calls/outgoing_call_screen.dart';
 import 'package:mobile/screens/conversation_history_screen.dart';
 import 'package:mobile/screens/conversation_screen.dart';
 import 'package:mobile/screens/recognition_screen.dart';
+import 'package:mobile/screens/sos_screen.dart';
 import 'package:mobile/services/call_api_service.dart';
 import 'package:mobile/services/call_signaling_service.dart';
 import 'package:mobile/services/livekit_call_service.dart';
 import 'package:mobile/services/push_notification_service.dart';
+import 'package:mobile/services/sos_api_service.dart';
+import 'package:mobile/services/sos_location_service.dart';
+import 'package:mobile/services/sos_platform_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // Global navigator key for push notification routing
@@ -145,6 +149,15 @@ class VSLBridgeApp extends StatelessWidget {
               ),
             );
 
+          case '/sos':
+            return MaterialPageRoute(
+              builder: (_) => SosScreen(
+                sosApiService: SosApiService(authToken: authToken),
+                locationService: SosLocationService(),
+                platformService: SosPlatformService(),
+              ),
+            );
+
           default:
             return null;
         }
@@ -218,6 +231,41 @@ class HomeScreen extends StatelessWidget {
                     },
                     icon: const Icon(Icons.back_hand),
                     label: const Text('Sign Recognition'),
+                  ),
+                  const SizedBox(height: 16),
+                  // SOS emergency entry — below primary actions, above history (D-02)
+                  Semantics(
+                    label: 'Nút SOS khẩn cấp. Nhấn giữ 2 giây để bắt đầu.',
+                    child: SizedBox(
+                      height: 64,
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.of(context).pushNamed('/sos');
+                        },
+                        icon: const Icon(
+                          Icons.warning_rounded,
+                          color: Colors.white,
+                        ),
+                        label: const Text(
+                          'SOS khẩn cấp',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Color(0xFFDC2626),
+                          padding: const EdgeInsets.symmetric(horizontal: 32),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Nhấn giữ 2 giây để bắt đầu',
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
                   ),
                   const SizedBox(height: 12),
                   TextButton.icon(
