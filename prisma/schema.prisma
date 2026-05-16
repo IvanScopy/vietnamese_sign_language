@@ -22,6 +22,8 @@ model User {
   notifications     Notification[]
   sentSosAlerts     SOSAlert[] @relation("SOSAlertSender")
   sosAlertReceivers SOSAlertReceiver[]
+  callerCalls       CallSession[] @relation("CallSessionCaller")
+  calleeCalls       CallSession[] @relation("CallSessionCallee")
 
   @@map("users")
 }
@@ -112,4 +114,36 @@ enum SOSStatus {
   ACTIVE
   RESOLVED
   CANCELLED
+}
+
+enum CallState {
+  RINGING
+  ACTIVE
+  ENDED
+  REJECTED
+  CANCELLED
+  MISSED
+  BUSY
+  FAILED
+
+  @@map("call_state")
+}
+
+model CallSession {
+  id         Int       @id @default(autoincrement())
+  roomName   String    @unique
+  callerId   Int
+  caller     User      @relation("CallSessionCaller", fields: [callerId], references: [id], onDelete: Cascade, map: "callerId")
+  calleeId   Int
+  callee     User      @relation("CallSessionCallee", fields: [calleeId], references: [id], onDelete: Cascade, map: "calleeId")
+  state      CallState @default(RINGING)
+  expiresAt  DateTime
+  acceptedAt DateTime?
+  endedAt    DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([callerId])
+  @@index([calleeId])
+  @@index([state])
+  @@map("call_sessions")
 }
