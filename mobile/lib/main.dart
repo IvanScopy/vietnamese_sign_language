@@ -172,11 +172,109 @@ class VSLBridgeApp extends StatelessWidget {
   }
 }
 
+typedef SelectCalleeId = Future<int?> Function(BuildContext context);
+
 class HomeScreen extends StatelessWidget {
   final AppConfig config;
   final String authToken;
+  final CallApiService? callApiService;
+  final SelectCalleeId? selectCalleeId;
 
-  const HomeScreen({super.key, required this.config, required this.authToken});
+  const HomeScreen({
+    super.key,
+    required this.config,
+    required this.authToken,
+    this.callApiService,
+    this.selectCalleeId,
+  });
+
+  Future<int?> _defaultSelectCalleeId(BuildContext context) async {
+    final controller = TextEditingController();
+    final rawInput = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Start video call'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          keyboardType: TextInputType.number,
+          decoration: const InputDecoration(
+            labelText: 'Callee user ID',
+            hintText: 'Enter a user ID',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(controller.text),
+            child: const Text('Start'),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+
+    if (rawInput == null) return null;
+
+    final calleeId = int.tryParse(rawInput.trim());
+    if (calleeId == null || calleeId < 1) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Enter a valid callee user ID')),
+        );
+      }
+      return null;
+    }
+
+    return calleeId;
+  }
+
+  Future<void> _startVideoCall(BuildContext context) async {
+    final calleeId = await (selectCalleeId ?? _defaultSelectCalleeId)(context);
+    if (calleeId == null) return;
+
+    if (calleeId < 1) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Enter a valid callee user ID')),
+        );
+      }
+      return;
+    }
+
+    final ownsService = callApiService == null;
+    final service = callApiService ??
+        CallApiService(baseUrl: config.httpUrl, authToken: authToken);
+
+    try {
+      final session = await service.createCall(calleeId);
+      if (!context.mounted) return;
+
+      Navigator.of(context).pushNamed('/calls/outgoing', arguments: {
+        'callId': session.callId,
+        'calleeName': session.fromUserName ?? 'User $calleeId',
+      });
+    } on CallApiException catch (error) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(error.message)),
+        );
+      }
+    } catch (error) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Unable to start video call: $error')),
+        );
+      }
+    } finally {
+      if (ownsService) {
+        service.dispose();
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -221,12 +319,7 @@ class HomeScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   OutlinedButton.icon(
-                    onPressed: () {
-                      Navigator.of(context).pushNamed('/calls/incoming', arguments: {
-                        'callId': 0,
-                        'fromUserName': 'Demo Caller',
-                      });
-                    },
+                    onPressed: () => _startVideoCall(context),
                     icon: const Icon(Icons.videocam),
                     label: const Text('Start video call'),
                   ),
