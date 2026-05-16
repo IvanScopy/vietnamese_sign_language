@@ -20,7 +20,7 @@ const participantCall = {
   roomName: 'vsl-call-room',
   callerId: 10,
   calleeId: 20,
-  state: 'ACTIVE',
+  state: 'ACTIVE' as const,
   expiresAt: new Date('2026-05-16T10:00:00.000Z'),
   acceptedAt: new Date('2026-05-16T10:01:00.000Z'),
   endedAt: null,
