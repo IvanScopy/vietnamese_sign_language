@@ -18,7 +18,7 @@
 | 2 | Sign Recognition MVP | Deliver camera-to-text sign recognition pipeline with confidence feedback and TTS handoff | COMM-01, COMM-06, MOB-03 | Implemented, validation pending |
 | 3 | Face-to-Face Conversation & History | Build one-device split-screen conversation mode and local text conversation history | COMM-04, HIST-01 through HIST-04 | Completed |
 | 4 | Video Calling | Add 1:1 video calling with integrated subtitles, sign recognition output, and TTS output | COMM-05, WEB-02, NOTIF-01 | Not Started |
-| 5 | SOS Emergency & Safety | Complete SOS flow with emergency contacts, GPS, SMS, and visual status notifications | EMERG-01, EMERG-02, MOB-04, MOB-05, NOTIF-02 | Not Started |
+| 5 | SOS Emergency & Safety | 6/8 | In Progress|  |
 | 6 | App, Dictionary & Admin Readiness | Finish production app shells, dictionary viewer, web parity, and admin management features | MOB-01, MOB-02, WEB-01, WEB-03, WEB-04, DICT-01 through DICT-04, ADMIN-01 through ADMIN-05 | Not Started |
 
 ---
@@ -135,16 +135,16 @@ Plans:
 
 **Status:** Not Started
 
-**Plans:** 8 plans
+**Plans:** 6/8 plans executed
 
 Plans:
-- [ ] 05-01-PLAN.md — Dependency legitimacy checkpoint and SOS package installation
-- [ ] 05-02-PLAN.md — Prisma SOS persistence contracts, validators, mocks, and required schema push
-- [ ] 05-03-PLAN.md — Auth-derived token registration and emergency contact phone-number CRUD
-- [ ] 05-04-PLAN.md — Server-authoritative SOS create API with Twilio provider SMS fanout
+- [x] 05-01-PLAN.md — Dependency legitimacy checkpoint and SOS package installation
+- [x] 05-02-PLAN.md — Prisma SOS persistence contracts, validators, mocks, and required schema push
+- [x] 05-03-PLAN.md — Auth-derived token registration and emergency contact phone-number CRUD
+- [x] 05-04-PLAN.md — Server-authoritative SOS create API with Twilio provider SMS fanout
 - [ ] 05-05-PLAN.md — Late GPS, native fallback records, Twilio callbacks, and SOS notification fanout
-- [ ] 05-06-PLAN.md — Flutter SOS API and location services with platform permission config
-- [ ] 05-07-PLAN.md — Mobile SOS home entry, hold/countdown/status UI, native handoffs, and push routing
+- [x] 05-06-PLAN.md — Flutter SOS API and location services with platform permission config
+- [x] 05-07-PLAN.md — Mobile SOS home entry, hold/countdown/status UI, native handoffs, and push routing
 - [ ] 05-08-PLAN.md — Automated verification gate and physical-device SOS safety protocol
 
 **Success Criteria:**
