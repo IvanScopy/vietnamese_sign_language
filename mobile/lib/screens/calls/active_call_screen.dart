@@ -56,7 +56,7 @@ class _ActiveCallScreenState extends State<ActiveCallScreen> {
   late final SignRecognitionService _recognitionService;
   late final SpeechTranscriptionService _sttService;
   late final CallTranscriptionService _ttsService;
-  bool _ownsRecognitionService = true;
+  final bool _ownsRecognitionService = true;
 
   @override
   void initState() {

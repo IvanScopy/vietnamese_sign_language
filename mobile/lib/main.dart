@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/config/app_config.dart';
 import 'package:mobile/models/call_state.dart';
+import 'package:mobile/models/user_type.dart';
 import 'package:mobile/screens/calls/active_call_screen.dart';
 import 'package:mobile/screens/calls/call_result_screen.dart';
 import 'package:mobile/screens/calls/incoming_call_screen.dart';
@@ -119,6 +120,8 @@ class VSLBridgeApp extends StatelessWidget {
           case '/calls/active':
             final args = settings.arguments as Map<String, dynamic>?;
             final callSession = args?['callSession'] as CallSession?;
+            final currentUserType =
+                args?['currentUserType'] as UserType? ?? UserType.deaf;
             if (callSession == null) {
               return MaterialPageRoute(
                 builder: (_) => const Scaffold(
@@ -135,6 +138,9 @@ class VSLBridgeApp extends StatelessWidget {
                 ),
                 callSession: callSession,
                 liveKitUrl: config.liveKitUrl,
+                config: config,
+                authToken: authToken,
+                currentUserType: currentUserType,
               ),
             );
 
