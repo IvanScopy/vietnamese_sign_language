@@ -37,21 +37,8 @@ export function initializeSocketIO(httpServer: any) {
       console.log(`User ${userId} registered on socket ${socket.id}`)
     })
 
-    // Handle incoming call notification
-    socket.on('call:incoming', async ({ toUserId, fromUserId, roomName }) => {
-      // Notify target user via Socket.io (if online)
-      const targetSockets = userSockets.get(toUserId)
-      if (targetSockets && targetSockets.length > 0) {
-        io.to(`user:${toUserId}`).emit('call:incoming', {
-          fromUserId,
-          roomName,
-          timestamp: Date.now(),
-          type: 'VIDEO_CALL',
-        })
-      }
-
-      // TODO: Also send FCM/APNs push notification if user not online
-    })
+    // Call signaling is now server-authoritative via REST endpoints.
+    // See src/app/api/calls/ — clients cannot emit call lifecycle events.
 
     // Handle SOS alert notification (high priority per CONTEXT.md)
     socket.on('sos:alert', async ({ userId, location, emergencyContacts }) => {
