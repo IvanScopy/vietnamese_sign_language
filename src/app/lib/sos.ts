@@ -184,6 +184,111 @@ export async function createSosAlert(
   };
 }
 
+export async function updateSosLocation(
+  userId: number,
+  alertId: number,
+  data: {
+    latitude: number;
+    longitude: number;
+    locationAccuracyMeters?: number;
+    locationLabel: string;
+    locationCapturedAt?: string;
+  }
+) {
+  const { prisma } = await import('./db');
+  const alert = await prisma.sOSAlert.findFirst({ where: { id: alertId, userId } });
+  if (!alert) return null;
+  return prisma.sOSAlert.update({
+    where: { id: alertId },
+    data: {
+      latitude: data.latitude,
+      longitude: data.longitude,
+      locationAccuracyMeters: data.locationAccuracyMeters,
+      locationLabel: data.locationLabel,
+      locationCapturedAt: data.locationCapturedAt ? new Date(data.locationCapturedAt) : undefined,
+    },
+  });
+}
+
+export async function recordSosFallback(
+  userId: number,
+  alertId: number,
+  data: {
+    fallbackType: 'native_sms_opened' | 'native_sms_failed' | 'dialer_opened';
+    attemptIds?: number[];
+  }
+) {
+  const { prisma } = await import('./db');
+  const alert = await prisma.sOSAlert.findFirst({ where: { id: alertId, userId } });
+  if (!alert) return null;
+
+  // Map fallback type to attempt status — NEVER native SMS sent/delivered
+  const statusMap = {
+    native_sms_opened: 'NATIVE_COMPOSER_OPENED' as const,
+    native_sms_failed: 'NATIVE_COMPOSER_FAILED' as const,
+    dialer_opened: 'DIALER_OPENED' as const,
+  };
+  const status = statusMap[data.fallbackType];
+
+  const now = new Date();
+  if (data.attemptIds?.length) {
+    await prisma.sosAlertAttempt.updateMany({
+      where: { id: { in: data.attemptIds }, sosAlertId: alertId },
+      data: { status, openedAt: now, updatedAt: now },
+    });
+  } else {
+    // Create a fallback attempt record
+    await prisma.sosAlertAttempt.create({
+      data: {
+        sosAlertId: alertId,
+        channel: data.fallbackType === 'dialer_opened' ? 'DIALER' : 'NATIVE_SMS',
+        status,
+        openedAt: now,
+      },
+    });
+  }
+
+  if (data.fallbackType !== 'dialer_opened') {
+    await prisma.sOSAlert.update({
+      where: { id: alertId },
+      data: { status: 'NATIVE_FALLBACK', nativeFallbackOpenedAt: now },
+    });
+  }
+
+  return { success: true };
+}
+
+export async function recordTwilioStatus(data: {
+  MessageSid: string;
+  MessageStatus: string;
+  ErrorCode?: string;
+  ErrorMessage?: string;
+}) {
+  const { prisma } = await import('./db');
+  const statusMap: Record<string, string> = {
+    queued: 'PROVIDER_QUEUED',
+    sent: 'PROVIDER_SENT',
+    delivered: 'PROVIDER_DELIVERED',
+    failed: 'PROVIDER_FAILED',
+    undelivered: 'PROVIDER_UNDELIVERED',
+  };
+  const status = statusMap[data.MessageStatus] ?? 'PROVIDER_QUEUED';
+  const now = new Date();
+
+  return prisma.sosAlertAttempt.updateMany({
+    where: { providerMessageSid: data.MessageSid },
+    data: {
+      providerStatus: data.MessageStatus,
+      status: status as any,
+      errorCode: data.ErrorCode,
+      errorMessage: data.ErrorMessage,
+      deliveredAt: data.MessageStatus === 'delivered' ? now : undefined,
+      failedAt: ['failed', 'undelivered'].includes(data.MessageStatus) ? now : undefined,
+      updatedAt: now,
+    },
+  });
+}
+
 function buildResponseFromAlert(alert: any) {
   return {
     id: alert.id,

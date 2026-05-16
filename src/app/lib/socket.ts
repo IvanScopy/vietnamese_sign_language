@@ -40,25 +40,10 @@ export function initializeSocketIO(httpServer: any) {
     // Call signaling is now server-authoritative via REST endpoints.
     // See src/app/api/calls/ — clients cannot emit call lifecycle events.
 
-    // Handle SOS alert notification (high priority per CONTEXT.md)
-    socket.on('sos:alert', async ({ userId, location, emergencyContacts }) => {
-      // Notify emergency contacts via Socket.io
-      for (const contactId of emergencyContacts) {
-        io.to(`user:${contactId}`).emit('sos:alert', {
-          fromUserId: userId,
-          location,
-          timestamp: Date.now(),
-          type: 'SOS',
-          priority: 'HIGH',
-          // Special payload for deaf users: custom colors, vibration
-          visualConfig: {
-            color: '#FF0000', // Red for SOS
-            pulse: true,
-            vibrationPattern: [200, 100, 200, 100, 200], // Custom pattern
-          },
-        })
-      }
-    })
+    // SOS fanout is server-authoritative — see src/app/lib/sos.ts
+    // Clients do NOT emit sos:alert with contact lists. The server loads emergency
+    // contacts from the database and emits to user:{linkedUserId} rooms after
+    // createSosAlert completes. This prevents contact-list injection attacks.
 
     // Handle disconnection
     socket.on('disconnect', () => {
