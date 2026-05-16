@@ -1,11 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/app/lib/db'
 import { RegisterTokenSchema } from '@/app/lib/validators'
+import { getAuthenticatedUser } from '@/app/lib/request-auth'
 
 export async function POST(request: NextRequest) {
   try {
+    const payload = await getAuthenticatedUser(request)
+    if (!payload) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const body = await request.json()
-    const validated = RegisterTokenSchema.safeParse(body)
+
+    // Only validate token and platform — userId is ignored from body (security)
+    const tokenSchema = RegisterTokenSchema.pick({ token: true, platform: true })
+    const validated = tokenSchema.safeParse(body)
 
     if (!validated.success) {
       return NextResponse.json(
@@ -14,14 +23,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { token, platform, userId } = validated.data
+    const { token, platform } = validated.data
+    const userId = payload.userId
 
-    // Upsert device token (update if user already has token for platform)
-    await prisma.$executeRaw`
-      INSERT INTO device_tokens (token, platform, "userId")
-      VALUES (${token}, ${platform}, ${userId})
-      ON CONFLICT (token) DO UPDATE SET "userId" = ${userId}
-    `
+    // Upsert device token (update if token already registered)
+    await prisma.deviceToken.upsert({
+      where: { token },
+      create: { token, platform, userId },
+      update: { platform, userId },
+    })
 
     return NextResponse.json({ success: true })
   } catch (error) {
