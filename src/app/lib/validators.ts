@@ -39,3 +39,12 @@ export const SendNotificationSchema = z.object({
   priority: z.enum(['normal', 'high']).default('normal'),
   type: z.enum(['CALL', 'SOS', 'MESSAGE', 'LEARNING']).default('MESSAGE'),
 })
+
+// Call lifecycle schemas
+export const CreateCallSchema = z.object({
+  calleeId: z.number().int().positive(),
+})
+
+export const CallActionSchema = z.object({
+  callId: z.number().int().positive(),
+})
