@@ -3,11 +3,15 @@ import { getAuthenticatedUser } from '@/app/lib/request-auth';
 import { SosLocationUpdateSchema } from '@/app/lib/validators';
 import { updateSosLocation } from '@/app/lib/sos';
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
   const payload = await getAuthenticatedUser(request);
   if (!payload) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const alertId = parseInt(params.id, 10);
+  const { id } = await params;
+  const alertId = parseInt(id, 10);
   if (isNaN(alertId)) return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
 
   let body: unknown;

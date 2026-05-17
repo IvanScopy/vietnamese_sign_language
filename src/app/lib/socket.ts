@@ -1,5 +1,6 @@
 import { Server as SocketIOServer, type Socket } from 'socket.io'
 import { prisma } from '@/app/lib/db'
+import { createHmac, timingSafeEqual } from 'crypto'
 
 interface AuthenticatedSocket extends Socket {
   userId?: number
@@ -8,6 +9,51 @@ interface AuthenticatedSocket extends Socket {
 
 // In-memory mapping of userId -> socketId for active connections
 const userSockets = new Map<number, string[]>()
+
+function base64UrlDecode(value: string): Buffer {
+  const normalized = value.replace(/-/g, '+').replace(/_/g, '/')
+  const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, '=')
+  return Buffer.from(padded, 'base64')
+}
+
+async function verifySocketAccessToken(token: string) {
+  try {
+    const secret = process.env.JWT_SECRET
+    if (!secret) return null
+
+    const [header, payload, signature] = token.split('.')
+    if (!header || !payload || !signature) return null
+
+    const expectedSignature = createHmac('sha256', secret)
+      .update(`${header}.${payload}`)
+      .digest()
+    const actualSignature = base64UrlDecode(signature)
+
+    if (
+      expectedSignature.length !== actualSignature.length ||
+      !timingSafeEqual(expectedSignature, actualSignature)
+    ) {
+      return null
+    }
+
+    const parsedPayload = JSON.parse(base64UrlDecode(payload).toString('utf8')) as {
+      userId?: unknown
+      userType?: unknown
+      exp?: unknown
+    }
+
+    if (typeof parsedPayload.exp === 'number' && parsedPayload.exp * 1000 < Date.now()) {
+      return null
+    }
+    if (typeof parsedPayload.userId !== 'number') return null
+    return {
+      userId: parsedPayload.userId,
+      userType: typeof parsedPayload.userType === 'string' ? parsedPayload.userType : undefined,
+    }
+  } catch {
+    return null
+  }
+}
 
 export function initializeSocketIO(httpServer: any) {
   const io = new SocketIOServer(httpServer, {
@@ -19,8 +65,36 @@ export function initializeSocketIO(httpServer: any) {
     transports: ['websocket', 'polling'],
   })
 
+  io.use(async (socket: AuthenticatedSocket, next) => {
+    const token =
+      typeof socket.handshake.auth?.token === 'string'
+        ? socket.handshake.auth.token
+        : socket.handshake.headers.authorization?.startsWith('Bearer ')
+          ? socket.handshake.headers.authorization.slice(7)
+          : null
+
+    if (!token) {
+      next()
+      return
+    }
+
+    const payload = await verifySocketAccessToken(token)
+    if (payload) {
+      socket.userId = payload.userId
+      socket.userType = payload.userType
+    }
+    next()
+  })
+
   io.on('connection', (socket: AuthenticatedSocket) => {
     console.log('Socket connected:', socket.id)
+
+    if (socket.userId) {
+      const existing = userSockets.get(socket.userId) || []
+      userSockets.set(socket.userId, [...existing, socket.id])
+      socket.join(`user:${socket.userId}`)
+      console.log(`User ${socket.userId} authenticated on socket ${socket.id}`)
+    }
 
     // Register user with their socket for targeted notifications
     socket.on('register', async (userId: number, userType: string) => {

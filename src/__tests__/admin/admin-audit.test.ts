@@ -22,6 +22,49 @@ describe('admin audit logging for sensitive actions', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     ;(prisma.adminAuditLog.create as jest.Mock).mockResolvedValue({ id: 1 })
+    ;(prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      id: 42,
+      email: 'user@example.com',
+      name: 'Managed User',
+      userType: 'HEARING',
+      isActive: true,
+      adminRole: null,
+    })
+    ;(prisma.user.count as jest.Mock | undefined)?.mockResolvedValue?.(2)
+    ;(prisma.dictionaryEntry.findUnique as jest.Mock).mockResolvedValue({
+      id: 99,
+      vietnameseText: 'xin chao',
+      categoryId: 1,
+      videoUrl: 'https://cdn.example.com/xin-chao.mp4',
+      videoKey: 'xin-chao.mp4',
+    })
+    ;(prisma.dictionaryEntry.update as jest.Mock).mockResolvedValue({
+      id: 99,
+      status: 'PUBLISHED',
+      vietnameseText: 'xin chao',
+      categoryId: 1,
+      videoUrl: 'https://cdn.example.com/xin-chao.mp4',
+      videoKey: 'xin-chao.mp4',
+    })
+    ;(prisma.broadcastMessage.findUnique as jest.Mock).mockResolvedValue({
+      id: 5,
+      senderUserId: 7,
+      targetGroup: 'deaf',
+      title: 'Test',
+      body: 'Message',
+      previewToken: 'preview-123',
+    })
+    ;(prisma.broadcastMessage.create as jest.Mock).mockResolvedValue({ id: 6 })
+    ;(prisma.sOSAlert.findUnique as jest.Mock).mockResolvedValue({
+      id: 123,
+      status: 'OPEN',
+      reviewStatus: 'PENDING',
+    })
+    ;(prisma.sOSAlert.update as jest.Mock).mockResolvedValue({
+      id: 123,
+      status: 'OPEN',
+      reviewStatus: 'REVIEWED',
+    })
   })
 
   test.each([

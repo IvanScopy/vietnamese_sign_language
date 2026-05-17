@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "dev": "node server.js",
+    "dev": "tsx server.js",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -19,8 +19,11 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1048.0",
+    "@aws-sdk/s3-request-presigner": "^3.1048.0",
     "@livekit/components-react": "^2.9.21",
     "@livekit/components-styles": "^1.2.0",
+    "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "bcrypt": "^6.0.0",
     "firebase-admin": "^13.10.0",
@@ -30,6 +33,7 @@
     "livekit-server-sdk": "^2.15.2",
     "next": "^16.2.4",
     "openapi-typescript": "^7.13.0",
+    "pg": "^8.16.3",
     "prisma": "^7.8.0",
     "socket.io": "^4.8.3",
     "socket.io-client": "^4.8.3",

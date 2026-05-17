@@ -42,8 +42,13 @@ export async function POST(
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Reject call error:', error)
+    const message =
+      error instanceof Error ? error.message : 'Internal server error'
+    if (message === 'Call unavailable') {
+      return NextResponse.json({ error: 'Call unavailable' }, { status: 409 })
+    }
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: message },
       { status: 500 },
     )
   }

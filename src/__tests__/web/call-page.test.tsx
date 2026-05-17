@@ -2,7 +2,10 @@ import { beforeEach, describe, expect, jest, test } from '@jest/globals'
 import {
   acceptRingingCall,
   cancelRingingCall,
+  endActiveCall,
   fetchCallPageData,
+  parsePositiveCallId,
+  saveCallTranscript,
 } from '@/app/calls/[callId]/page'
 
 jest.mock('next/navigation', () => ({
@@ -127,5 +130,39 @@ describe('Web Call Page', () => {
       credentials: 'include',
     })
     expect(result.token).toBeNull()
+  })
+
+  test('parsePositiveCallId rejects invalid route params', () => {
+    expect(parsePositiveCallId('42')).toBe(42)
+    expect(parsePositiveCallId(['7'])).toBe(7)
+    expect(parsePositiveCallId('0')).toBeNull()
+    expect(parsePositiveCallId('not-a-number')).toBeNull()
+    expect(parsePositiveCallId(undefined)).toBeNull()
+  })
+
+  test('endActiveCall POSTs the server end transition', async () => {
+    const fetchMock = global.fetch as jest.MockedFunction<typeof fetch>
+    fetchMock.mockResolvedValueOnce(jsonResponse({ success: true }))
+
+    await endActiveCall(42)
+
+    expect(fetchMock).toHaveBeenCalledWith('/api/calls/42/end', {
+      method: 'POST',
+      credentials: 'include',
+    })
+  })
+
+  test('saveCallTranscript POSTs confirmed transcript text', async () => {
+    const fetchMock = global.fetch as jest.MockedFunction<typeof fetch>
+    fetchMock.mockResolvedValueOnce(jsonResponse({ success: true }))
+
+    await saveCallTranscript(42, 'Xin chao')
+
+    expect(fetchMock).toHaveBeenCalledWith('/api/calls/42/transcript', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ transcript: 'Xin chao' }),
+    })
   })
 })

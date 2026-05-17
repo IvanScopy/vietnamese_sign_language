@@ -50,9 +50,11 @@ export async function POST(
     }
 
     return NextResponse.json({
+      callId: result.callId,
+      id: result.id,
+      state: result.state,
       roomName: result.roomName,
       token: result.calleeToken,
-      callerToken: result.callerToken,
     })
   } catch (error) {
     console.error('Accept call error:', error)

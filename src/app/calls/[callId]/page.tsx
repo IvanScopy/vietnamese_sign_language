@@ -48,6 +48,13 @@ export async function fetchActiveCallToken(callId: number): Promise<string> {
   return tokenData.token
 }
 
+export function parsePositiveCallId(value: unknown): number | null {
+  const raw = Array.isArray(value) ? value[0] : value
+  if (typeof raw !== 'string' || !/^\d+$/.test(raw)) return null
+  const parsed = Number(raw)
+  return Number.isSafeInteger(parsed) && parsed > 0 ? parsed : null
+}
+
 export async function fetchCallPageData(
   callId: number,
 ): Promise<{ data: CallData; token: string | null }> {
@@ -95,11 +102,35 @@ export async function cancelRingingCall(callId: number): Promise<void> {
   }
 }
 
+export async function endActiveCall(callId: number): Promise<void> {
+  const response = await fetch(`/api/calls/${callId}/end`, {
+    method: 'POST',
+    credentials: 'include',
+  })
+
+  if (!response.ok) {
+    throw new Error('Failed to end call')
+  }
+}
+
+export async function saveCallTranscript(callId: number, transcript: string): Promise<void> {
+  const response = await fetch(`/api/calls/${callId}/transcript`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ transcript }),
+  })
+
+  if (!response.ok) {
+    throw new Error('Failed to save transcript')
+  }
+}
+
 export default function CallPage() {
   const params = useParams()
   const router = useRouter()
   const searchParams = useSearchParams()
-  const callId = Number(params.callId)
+  const callId = parsePositiveCallId(params.callId)
 
   const [callData, setCallData] = useState<CallData | null>(null)
   const [token, setToken] = useState<string | null>(null)
@@ -107,6 +138,7 @@ export default function CallPage() {
   const [error, setError] = useState<string | null>(null)
   const [showIncomingModal, setShowIncomingModal] = useState(false)
   const [callerName, setCallerName] = useState('')
+  const [transcriptText, setTranscriptText] = useState('')
 
   // Handle state query param (for post-call result navigation)
   const rawStateParam = searchParams.get('state')
@@ -127,6 +159,12 @@ export default function CallPage() {
     }
 
     async function fetchCallData() {
+      if (callId == null) {
+        setError('Invalid call ID')
+        setIsLoading(false)
+        return
+      }
+
       try {
         const { data, token: activeToken } = await fetchCallPageData(callId)
         setCallData(data)
@@ -152,13 +190,11 @@ export default function CallPage() {
       }
     }
 
-    if (callId) {
-      fetchCallData()
-    }
+    fetchCallData()
   }, [callId, stateParam])
 
   const handleAccept = useCallback(async () => {
-    if (!callId) return
+    if (callId == null) return
 
     try {
       const acceptToken = await acceptRingingCall(callId)
@@ -172,7 +208,7 @@ export default function CallPage() {
   }, [callId])
 
   const handleReject = useCallback(async () => {
-    if (!callId) return
+    if (callId == null) return
 
     try {
       await fetch(`/api/calls/${callId}/reject`, {
@@ -188,7 +224,7 @@ export default function CallPage() {
   }, [callId, router])
 
   const handleCancel = useCallback(async () => {
-    if (!callId) return
+    if (callId == null) return
 
     try {
       await cancelRingingCall(callId)
@@ -199,9 +235,28 @@ export default function CallPage() {
     }
   }, [callId, router])
 
-  const handleEnd = useCallback(() => {
+  const handleEnd = useCallback(async () => {
+    if (callId == null) {
+      router.push('/calls')
+      return
+    }
+
+    try {
+      await endActiveCall(callId)
+    } catch (err) {
+      console.error('Failed to end call:', err)
+    }
     router.push(`/calls/${callId}?state=ENDED`)
   }, [callId, router])
+
+  const handleSaveTranscript = useCallback(async () => {
+    if (callId == null) return
+    const text = transcriptText.trim()
+    if (!text) {
+      throw new Error('No confirmed transcript text to save')
+    }
+    await saveCallTranscript(callId, text)
+  }, [callId, transcriptText])
 
   const handleHome = useCallback(() => {
     router.push('/calls')
@@ -260,7 +315,7 @@ export default function CallPage() {
           state={resultState}
           onRetry={resultState === 'failed' ? handleRetry : undefined}
           onHome={handleHome}
-          onSaveTranscript={resultState === 'ended' ? () => {} : undefined}
+          onSaveTranscript={resultState === 'ended' ? handleSaveTranscript : undefined}
         />
       </div>
     )
@@ -275,14 +330,14 @@ export default function CallPage() {
           state={resultState}
           onRetry={resultState === 'failed' ? handleRetry : undefined}
           onHome={handleHome}
-          onSaveTranscript={resultState === 'ended' ? () => {} : undefined}
+          onSaveTranscript={resultState === 'ended' ? handleSaveTranscript : undefined}
         />
       </div>
     )
   }
 
   // Active call — render LiveKit canvas
-  if (callData?.state === 'ACTIVE' && token) {
+  if (callData?.state === 'ACTIVE' && token && callId != null) {
     return (
       <div style={{ height: '100vh', width: '100vw' }}>
         <ActiveCallCanvas
@@ -291,13 +346,14 @@ export default function CallPage() {
           callId={callId}
           serverUrl={process.env.NEXT_PUBLIC_LIVEKIT_URL || ''}
           onEnd={handleEnd}
+          onTranscriptText={setTranscriptText}
         />
       </div>
     )
   }
 
   // Ringing state — show incoming modal or outgoing ringing
-  if (callData?.state === 'RINGING' || showIncomingModal) {
+  if ((callData?.state === 'RINGING' || showIncomingModal) && callId != null) {
     return (
       <div
         style={{

@@ -17,9 +17,9 @@
 | 1 | Foundation & Authentication | Set up backend, auth, profiles, STT/TTS provider abstraction, and notification infrastructure | ACC-01 through ACC-04, COMM-02, COMM-03, PLAT-01 through PLAT-03 | Completed |
 | 2 | Sign Recognition MVP | Deliver camera-to-text sign recognition pipeline with confidence feedback and TTS handoff | COMM-01, COMM-06, MOB-03 | Implemented, validation pending |
 | 3 | Face-to-Face Conversation & History | Build one-device split-screen conversation mode and local text conversation history | COMM-04, HIST-01 through HIST-04 | Completed |
-| 4 | Video Calling | Add 1:1 video calling with integrated subtitles, sign recognition output, and TTS output | COMM-05, WEB-02, NOTIF-01 | In Progress (6/7 plans) |
-| 5 | SOS Emergency & Safety | 6/8 | In Progress|  |
-| 6 | App, Dictionary & Admin Readiness | Finish production app shells, dictionary viewer, web parity, and admin management features | MOB-01, MOB-02, WEB-01, WEB-03, WEB-04, DICT-01 through DICT-04, ADMIN-01 through ADMIN-05 | Not Started |
+| 4 | Video Calling | Add 1:1 in-app video calls between registered users, with integrated translation surfaces | COMM-05, WEB-02, NOTIF-01 | External-service UAT blocked |
+| 5 | SOS Emergency & Safety | Complete safety-critical SOS workflows with emergency contacts, GPS location, SMS sending, and accessible visual feedback | EMERG-01, EMERG-02, MOB-04, MOB-05, NOTIF-02 | Completed |
+| 6 | App, Dictionary & Admin Readiness | Finish production app shells, dictionary viewer, web parity, and admin management features | MOB-01, MOB-02, WEB-01, WEB-03, WEB-04, DICT-01 through DICT-04, ADMIN-01 through ADMIN-05 | Completed |
 
 ---
 
@@ -99,9 +99,9 @@
 
 **Requirements:** COMM-05, WEB-02, NOTIF-01
 
-**Status:** In Progress (6/7 plans executed)
+**Status:** Automated/substitute UAT complete; real LiveKit/FCM/device UAT blocked
 
-**Plans:** 6/7 plans executed
+**Plans:** 8/8 plans complete
 
 Plans:
 
@@ -125,7 +125,11 @@ Plans:
 
 **Wave 5** *(blocked on Wave 4 completion)*
 
-- [ ] 04-07-PLAN.md — Gap closure: mobile active route constructor and outgoing call entry flow
+- [x] 04-07-PLAN.md — Gap closure: mobile active route constructor and outgoing call entry flow
+
+**Wave 6** *(blocked on Wave 5 completion)*
+
+- [x] 04-08-PLAN.md — Gap closure: safe call lifecycle, signaling, transcript save, web/mobile regression gates
 
 **Success Criteria:**
 1. Registered users can initiate, receive, accept, reject, and end 1:1 calls.
@@ -150,7 +154,7 @@ Plans:
 
 **Requirements:** EMERG-01, EMERG-02, MOB-04, MOB-05, NOTIF-02
 
-**Status:** Not Started
+**Status:** Completed
 
 **Plans:** 6/8 plans executed
 
@@ -187,6 +191,37 @@ Plans:
 **Requirements:** MOB-01, MOB-02, WEB-01, WEB-03, WEB-04, DICT-01, DICT-02, DICT-03, DICT-04, ADMIN-01, ADMIN-02, ADMIN-03, ADMIN-04, ADMIN-05
 
 **Status:** Not Started
+
+**Plans:** 9/9 plans complete
+
+Plans:
+
+**Wave 0**
+
+- [x] 06-01-PLAN.md — Validation scaffold for dictionary, admin, web, and mobile contracts
+
+**Wave 1** *(blocked on Wave 0 completion)*
+
+- [x] 06-02-PLAN.md — Backend foundation: storage packages, schema/import/admin helpers, and blocking Prisma schema push
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [x] 06-03-PLAN.md — User-facing dictionary APIs for search, category browse, and detail playback metadata
+- [x] 06-04-PLAN.md — Role-gated admin APIs for users, dictionary, lessons, SOS review, broadcasts, and audit logs
+- [x] 06-09-PLAN.md — Shared web/mobile account API hardening for Bearer sessions, profile/contact access, and inactive users
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [x] 06-05-PLAN.md — Web app shell, dictionary, recognition, profile/notifications, and separate admin UI
+- [x] 06-06-PLAN.md — Flutter tab shell, auth/profile flow, and mobile dictionary screens
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
+- [x] 06-07-PLAN.md — Web/mobile UI polish, accessibility, and route reachability integration
+
+**Wave 5** *(blocked on Wave 4 completion)*
+
+- [x] 06-08-PLAN.md — Final automated verification and substitute UAT protocol
 
 **Success Criteria:**
 1. iOS and Android app shells meet production UI/accessibility expectations.

@@ -13,6 +13,7 @@ void main() {
         serverUrl: 'localhost',
         serverPort: 8000,
         authToken: 'test-token',
+        connectionTimeout: const Duration(milliseconds: 50),
       );
     });
 
@@ -24,10 +25,8 @@ void main() {
       expect(service.isConnected, isFalse);
     });
 
-    test('connect() does not throw', () async {
-      // This will fail to actually connect without a server, but shouldn't throw
-      // during setup phase
-      expect(() => service.connect(), returnsNormally);
+    test('connect() times out without a backend handshake', () async {
+      await expectLater(service.connect(), throwsA(isA<TimeoutException>()));
     });
 
     test('sendLandmarks() returns early when not connected', () async {
@@ -36,12 +35,7 @@ void main() {
           handedness: 'Left',
           landmarks: List.generate(
             21,
-            (i) => Landmark(
-              x: 0.5,
-              y: 0.5,
-              z: 0.0,
-              visibility: 1.0,
-            ),
+            (i) => Landmark(x: 0.5, y: 0.5, z: 0.0, visibility: 1.0),
           ),
         ),
         right: null,

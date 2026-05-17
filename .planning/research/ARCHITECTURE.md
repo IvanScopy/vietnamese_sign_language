@@ -415,6 +415,8 @@ For backend:
 
 ## Build Order (Dependencies)
 
+This section is research context. The authoritative current phase sequence is `.planning/ROADMAP.md`; avatar work is deferred to v2+.
+
 ```
 Phase 0: Foundation
 ├── Backend API skeleton (Express + PostgreSQL)
@@ -434,35 +436,47 @@ Phase 2: Speech I/O (Parallelizable)
 ├── Speech UI components
 └── Testing end-to-end: sign → text, speech → text
 
-Phase 3: Video Calling (Depends on auth)
+Phase 3: Face-to-Face Conversation & History (Depends on recognition + speech I/O)
+├── Split-screen conversation mode
+├── Shared text timeline
+├── Local text-only conversation history
+├── Search and share/export
+└── No v1 avatar dependency
+
+Phase 4: Video Calling (Depends on auth + recognition)
 ├── WebRTC signaling server
 ├── STUN/TURN setup
 ├── Call screens UI
 ├── Permission handling
 └── Call history logging
 
-Phase 4: Avatar System (Depends on recognition output)
-├── Avatar model loading (VRM/GLB)
-├── Animation system (bone/blend shape controller)
-├── Sign-to-animation mapping
-├── Avatar rendering in Three.js/Unity
-└── API for remote rendering (optional)
-
-Phase 5: Learning System (Depends on dictionary)
-├── Dictionary data model (4000 signs)
-├── Video thumbnails / previews
-├── Lesson builder UI
-├── Quiz system with camera feedback
-└── Progress tracking
-
-Phase 6: SOS & Emergency (Depends on accounts)
+Phase 5: SOS & Emergency (Depends on accounts)
 ├── GPS location service
 ├── SMS notification integration
 ├── Emergency contact management
 ├── SOS triggering flow
 └── Admin SOS dashboard
 
-Phase 7: Polish & Cross-Platform
+Phase 6: App, Dictionary & Admin Readiness
+├── Dictionary data model (4000 signs)
+├── Video thumbnails / previews
+├── Web/mobile parity
+├── Admin management screens
+└── Production polish
+
+v1.x: Learning System (Depends on dictionary)
+├── Lesson builder UI
+├── Quiz system with camera feedback
+└── Progress tracking
+
+v2+: Avatar System (Deferred)
+├── Avatar model loading (VRM/GLB)
+├── Animation system (bone/blend shape controller)
+├── Sign-to-animation mapping
+├── Avatar rendering in Three.js/Unity
+└── API for remote rendering (optional)
+
+Later: Polish & Cross-Platform
 ├── Web app feature parity
 ├── Performance optimization
 ├── Accessibility features

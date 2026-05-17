@@ -7,7 +7,16 @@ export const dynamic = 'force-dynamic'
 export async function POST(request: NextRequest) {
   try {
     // Get refresh token from cookie or request body
+    const body = request.headers.get('content-type')?.includes('application/json')
+      ? await request.json().catch(() => ({}))
+      : {}
+    const authHeader = request.headers.get('Authorization')
+    const bearerRefreshToken = authHeader?.startsWith('Bearer ')
+      ? authHeader.slice(7)
+      : null
     const refreshToken = request.cookies.get('refreshToken')?.value
+      ?? body.refreshToken
+      ?? bearerRefreshToken
 
     if (!refreshToken) {
       return NextResponse.json(
@@ -43,6 +52,16 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    if (storedToken.user?.isActive === false) {
+      await prisma.refreshToken.deleteMany({
+        where: { userId: storedToken.user.id },
+      })
+      return NextResponse.json(
+        { error: 'Your session expired. Log in again to continue.' },
+        { status: 403 }
+      )
+    }
+
     // Generate new tokens (token rotation)
     const newPayload = {
       userId: storedToken.user.id,
@@ -62,7 +81,11 @@ export async function POST(request: NextRequest) {
     })
 
     // Set new cookies
-    const response = NextResponse.json({ success: true })
+    const response = NextResponse.json({
+      success: true,
+      accessToken: newAccessToken,
+      refreshToken: newRefreshToken,
+    })
 
     response.cookies.set('accessToken', newAccessToken, {
       httpOnly: true,

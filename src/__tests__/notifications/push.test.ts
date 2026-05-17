@@ -4,9 +4,20 @@ import { POST as sendNotification } from '@/app/api/notifications/send/route'
 import { NextRequest } from 'next/server'
 import { prisma } from '@/app/lib/db'
 
+jest.mock('@/app/lib/request-auth', () => ({
+  getAuthenticatedUser: jest.fn(),
+}))
+
+import { getAuthenticatedUser } from '@/app/lib/request-auth'
+
 describe('Notifications API', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    ;(getAuthenticatedUser as jest.Mock).mockResolvedValue({
+      userId: 1,
+      email: 'test@example.com',
+      userType: 'DEAF',
+    })
   })
 
   describe('POST /api/notifications/register-token', () => {

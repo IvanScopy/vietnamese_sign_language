@@ -32,6 +32,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    if (user.isActive === false) {
+      return NextResponse.json(
+        { error: 'Account disabled' },
+        { status: 403 }
+      )
+    }
+
     // Generate tokens
     const payload = { userId: user.id, email: user.email, userType: user.userType }
     const accessToken = await encryptAccessToken(payload)
@@ -49,6 +56,8 @@ export async function POST(request: NextRequest) {
     // Set httpOnly cookies
     const response = NextResponse.json({
       user: { id: user.id, email: user.email, name: user.name, userType: user.userType },
+      accessToken,
+      refreshToken,
     })
 
     response.cookies.set('accessToken', accessToken, {

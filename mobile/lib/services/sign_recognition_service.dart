@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 import 'package:mobile/models/landmark.dart';
 import 'package:mobile/models/recognition_event.dart';
@@ -14,7 +15,8 @@ class SignRecognitionService {
   final String serverUrl;
   final int serverPort;
   final String authToken;
-  final String? sessionId;
+  final Duration connectionTimeout;
+  String? _sessionId;
 
   bool _isConnected = false;
   bool _isConnecting = false;
@@ -35,13 +37,15 @@ class SignRecognitionService {
   Stream<PhraseComplete> get phraseStream => _phraseController.stream;
   Stream<bool> get connectionStream => _connectionController.stream;
   bool get isConnected => _isConnected;
+  String? get sessionId => _sessionId;
 
   SignRecognitionService({
     required this.serverUrl,
     required this.serverPort,
     required this.authToken,
-    this.sessionId,
-  });
+    this.connectionTimeout = const Duration(seconds: 10),
+    String? sessionId,
+  }) : _sessionId = sessionId;
 
   /// Connect to the recognition service
   Future<void> connect() async {
@@ -57,6 +61,7 @@ class SignRecognitionService {
         uri,
         io.OptionBuilder()
             .setTransports(['websocket'])
+            .setAuth({'token': authToken})
             .setExtraHeaders({'Authorization': 'Bearer $authToken'})
             .disableAutoConnect()
             .build(),
@@ -68,6 +73,13 @@ class SignRecognitionService {
 
       // Wait for connection with timeout
       await _waitForConnection();
+    } catch (_) {
+      _socket?.disconnect();
+      _socket?.dispose();
+      _socket = null;
+      _isConnected = false;
+      _sessionId = null;
+      rethrow;
     } finally {
       _isConnecting = false;
     }
@@ -75,25 +87,26 @@ class SignRecognitionService {
 
   void _setupEventHandlers() {
     _socket!.on('connect', (_) {
-      _isConnected = true;
-      _connectionController.add(true);
-      print('Socket.io connected: ${_socket!.id}');
+      debugPrint('Socket.io connected: ${_socket!.id}');
     });
 
     _socket!.on('disconnect', (reason) {
       _isConnected = false;
       _connectionController.add(false);
-      print('Socket.io disconnected: $reason');
+      debugPrint('Socket.io disconnected: $reason');
     });
 
     _socket!.on('connect_error', (error) {
-      print('Socket.io connection error: $error');
+      debugPrint('Socket.io connection error: $error');
       _isConnected = false;
       _connectionController.add(false);
     });
 
     _socket!.on('connected', (data) {
-      print('Received connected event: $data');
+      _sessionId = data['sessionId'] as String?;
+      _isConnected = true;
+      _connectionController.add(true);
+      debugPrint('Received connected event: $data');
     });
 
     _socket!.on('sign_recognized', (data) {
@@ -104,7 +117,7 @@ class SignRecognitionService {
         );
         _signController.add(result);
       } catch (e) {
-        print('Error parsing sign_recognized: $e');
+        debugPrint('Error parsing sign_recognized: $e');
       }
     });
 
@@ -113,77 +126,108 @@ class SignRecognitionService {
         final phrase = PhraseComplete(
           text: data['text'] as String,
           signs: (data['signs'] as List)
-              .map((s) => RecognitionResult(
-                    sign: s['sign'] as String,
-                    confidence: (s['confidence'] as num).toDouble(),
-                  ))
+              .map(
+                (s) => RecognitionResult(
+                  sign: s['sign'] as String,
+                  confidence: (s['confidence'] as num).toDouble(),
+                ),
+              )
               .toList(),
           audio: data['audio'] as String?,
         );
         _phraseController.add(phrase);
       } catch (e) {
-        print('Error parsing phrase_complete: $e');
+        debugPrint('Error parsing phrase_complete: $e');
       }
     });
 
     _socket!.on('error', (data) {
-      print('Socket.io error: $data');
+      debugPrint('Socket.io error: $data');
     });
   }
 
   Future<void> _waitForConnection() async {
     final completer = Completer<void>();
-    void listener(bool connected) {
-      if (connected) {
-        completer.complete();
-      }
-    }
+    late final StreamSubscription<bool> subscription;
 
-    _connectionController.stream.listen(listener);
+    subscription = _connectionController.stream.listen(
+      (connected) {
+        if (connected && !completer.isCompleted) {
+          completer.complete();
+        }
+      },
+      onError: (Object error, StackTrace stackTrace) {
+        if (!completer.isCompleted) {
+          completer.completeError(error, stackTrace);
+        }
+      },
+      onDone: () {
+        if (!completer.isCompleted) {
+          completer.completeError(
+            TimeoutException('Connection closed before backend handshake'),
+          );
+        }
+      },
+    );
 
     try {
       await completer.future.timeout(
-        const Duration(seconds: 10),
-        onTimeout: () {
-          throw TimeoutException('Connection timeout');
-        },
+        connectionTimeout,
+        onTimeout: () => throw TimeoutException('Connection timeout'),
       );
     } finally {
-      // Note: In production, would need to unsubscribe
+      await subscription.cancel();
     }
   }
 
   /// Send landmarks to the server for recognition
   void sendLandmarks(LandmarksPayload payload) {
     if (!_isConnected || _socket == null) {
-      print('Cannot send landmarks: not connected');
+      debugPrint('Cannot send landmarks: not connected');
       return;
     }
 
     final data = {
       'landmarks': {
+        if (payload.pose != null)
+          'pose': {
+            'landmarks': payload.pose!.landmarks
+                .map(
+                  (lm) => {
+                    'x': lm.x,
+                    'y': lm.y,
+                    'z': lm.z,
+                    'visibility': lm.visibility,
+                  },
+                )
+                .toList(),
+          },
         if (payload.left != null)
           'left': {
             'handedness': payload.left!.handedness,
             'landmarks': payload.left!.landmarks
-                .map((lm) => {
-                      'x': lm.x,
-                      'y': lm.y,
-                      'z': lm.z,
-                      'visibility': lm.visibility,
-                    })
+                .map(
+                  (lm) => {
+                    'x': lm.x,
+                    'y': lm.y,
+                    'z': lm.z,
+                    'visibility': lm.visibility,
+                  },
+                )
                 .toList(),
           },
         if (payload.right != null)
           'right': {
             'handedness': payload.right!.handedness,
             'landmarks': payload.right!.landmarks
-                .map((lm) => {
-                      'x': lm.x,
-                      'y': lm.y,
-                      'z': lm.z,
-                      'visibility': lm.visibility,
-                    })
+                .map(
+                  (lm) => {
+                    'x': lm.x,
+                    'y': lm.y,
+                    'z': lm.z,
+                    'visibility': lm.visibility,
+                  },
+                )
                 .toList(),
           },
       },
@@ -194,10 +238,27 @@ class SignRecognitionService {
     _socket!.emit('landmarks', data);
   }
 
+  /// Ask the backend to close the current phrase and emit phrase_complete.
+  void completePhrase() {
+    if (!_isConnected || _socket == null) {
+      return;
+    }
+    _socket!.emit('complete_phrase', {});
+  }
+
+  /// Clear the current backend phrase state.
+  void clearPhrase() {
+    if (!_isConnected || _socket == null) {
+      return;
+    }
+    _socket!.emit('clear_phrase', {});
+  }
+
   /// Disconnect from the server
   void disconnect() {
     _socket?.disconnect();
     _isConnected = false;
+    _sessionId = null;
   }
 
   /// Dispose all resources

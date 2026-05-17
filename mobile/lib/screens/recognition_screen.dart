@@ -1,9 +1,9 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:mobile/config/app_config.dart';
 import 'package:mobile/models/landmark.dart';
 import 'package:mobile/models/recognition_event.dart';
-import 'package:mobile/services/buffer_manager.dart';
 import 'package:mobile/services/sign_recognition_service.dart';
 import 'package:mobile/widgets/camera_preview.dart';
 import 'package:mobile/widgets/text_panel.dart';
@@ -12,7 +12,7 @@ import 'package:mobile/widgets/text_panel.dart';
 ///
 /// Displays a split view with camera preview on the left and recognized
 /// text panel on the right. Manages the recognition pipeline from camera
-/// through buffer to backend service.
+/// through the backend recognition service.
 class RecognitionScreen extends StatefulWidget {
   /// Recognition service host
   final String serverUrl;
@@ -40,7 +40,6 @@ class RecognitionScreen extends StatefulWidget {
 
 class _RecognitionScreenState extends State<RecognitionScreen> {
   late SignRecognitionService _recognitionService;
-  late BufferManager _bufferManager;
 
   /// Current accumulated signs in the phrase
   final List<RecognitionResult> _currentSigns = [];
@@ -57,22 +56,15 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
   /// Error message (if any)
   String? _errorMessage;
 
-  /// Latency measurement (round-trip time in ms)
-  int? _lastLatencyMs;
-
   /// Average latency over last N measurements
   final List<int> _latencySamples = [];
   static const int _maxLatencySamples = 20;
+  static const Duration _phraseCompletionDelay = Duration(milliseconds: 2500);
+  Timer? _phraseCompletionTimer;
 
   @override
   void initState() {
     super.initState();
-
-    // Initialize buffer manager with 30-frame window and 2.5s phrase timeout
-    _bufferManager = BufferManager(
-      windowSize: 30,
-      phraseTimeoutMs: 2500,
-    );
 
     // Initialize recognition service
     _recognitionService = SignRecognitionService(
@@ -89,25 +81,6 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
   }
 
   void _setupListeners() {
-    // Listen for sign recognition from buffer manager
-    _bufferManager.signStream.listen((result) {
-      if (mounted) {
-        setState(() {
-          _currentSigns.add(result);
-        });
-      }
-    });
-
-    // Listen for phrase completion from buffer manager
-    _bufferManager.phraseStream.listen((phrase) {
-      if (mounted) {
-        setState(() {
-          _lastPhrase = phrase;
-        });
-        // Optionally auto-play audio here if available
-      }
-    });
-
     // Listen for connection status from service
     _recognitionService.connectionStream.listen((connected) {
       if (mounted) {
@@ -117,20 +90,21 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
       }
     });
 
-    // Listen for server-side sign recognition (alternative path)
+    // Listen for server-side sign recognition
     // Track latency: compare current time with when landmarks were sent
     _recognitionService.signStream.listen((result) {
       final now = DateTime.now().millisecondsSinceEpoch;
       // Note: This is a simplified latency measure; in production,
       // you'd track the send timestamp per frame
       // For now, we'll just log the fact that we received something
-      print('[Latency] Sign received at $now');
+      debugPrint('[Latency] Sign received at $now');
 
       if (mounted) {
         setState(() {
           _currentSigns.add(result);
         });
       }
+      _schedulePhraseCompletion();
     });
 
     // Listen for server-side phrase completion
@@ -140,6 +114,7 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
           _lastPhrase = phrase;
         });
       }
+      _phraseCompletionTimer?.cancel();
     });
   }
 
@@ -162,10 +137,11 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
   }
 
   void _clearPhrase() {
+    _phraseCompletionTimer?.cancel();
+    _recognitionService.clearPhrase();
     setState(() {
       _currentSigns.clear();
       _lastPhrase = null;
-      _bufferManager.clear();
     });
   }
 
@@ -182,8 +158,8 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
 
   @override
   void dispose() {
+    _phraseCompletionTimer?.cancel();
     _recognitionService.dispose();
-    _bufferManager.dispose();
     super.dispose();
   }
 
@@ -210,9 +186,7 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
           ),
         ],
       ),
-      body: _errorMessage != null
-          ? _buildErrorView()
-          : _buildMainView(),
+      body: _errorMessage != null ? _buildErrorView() : _buildMainView(),
     );
   }
 
@@ -339,7 +313,7 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
 
   void _onLandmarksDetected(LandmarksPayload payload) {
     final now = DateTime.now().millisecondsSinceEpoch;
-    print('[Latency] Landmarks received at $now');
+    debugPrint('[Latency] Landmarks received at $now');
 
     // Track latency: store the send time in a simple way
     // In production, you'd use a more sophisticated correlation mechanism
@@ -349,6 +323,7 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
 
     // Add session ID from service if available
     final payloadWithSession = LandmarksPayload(
+      pose: payload.pose,
       left: payload.left,
       right: payload.right,
       timestamp: payload.timestamp,
@@ -357,13 +332,17 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
           : payload.sessionId,
     );
 
-    // Feed landmarks to buffer manager
-    _bufferManager.addLandmarks(payloadWithSession);
-
-    // Also send to server if connected
+    // Send landmarks to server if connected
     if (_isConnected) {
       _recognitionService.sendLandmarks(payloadWithSession);
     }
+  }
+
+  void _schedulePhraseCompletion() {
+    _phraseCompletionTimer?.cancel();
+    _phraseCompletionTimer = Timer(_phraseCompletionDelay, () {
+      _recognitionService.completePhrase();
+    });
   }
 
   /// Update latency measurement based on frame-to-processing delta
@@ -384,12 +363,17 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
       if (_latencySamples.length > _maxLatencySamples) {
         _latencySamples.removeAt(0);
       }
-      final avg = _latencySamples.reduce((a, b) => a + b) / _latencySamples.length;
-      print('[Latency] Current processing delay: ${processingDelay}ms, Average: ${avg.round()}ms');
+      final avg =
+          _latencySamples.reduce((a, b) => a + b) / _latencySamples.length;
+      debugPrint(
+        '[Latency] Current processing delay: ${processingDelay}ms, Average: ${avg.round()}ms',
+      );
 
       // Alert if latency exceeds threshold
       if (processingDelay > 1000) {
-        print('[Latency WARNING] Processing latency ${processingDelay}ms exceeds 1000ms threshold!');
+        debugPrint(
+          '[Latency WARNING] Processing latency ${processingDelay}ms exceeds 1000ms threshold!',
+        );
       }
     }
   }

@@ -110,6 +110,8 @@ class CallSignalingService {
 
   void _setupEventHandlers() {
     _socket!.on('connect', (_) {
+      _isConnected = true;
+      _connectionController.add(true);
       debugPrint('[CallSignaling] Socket.io connected: ${_socket!.id}');
     });
 

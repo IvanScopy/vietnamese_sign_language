@@ -34,22 +34,40 @@ Map<String, dynamic> _$HandLandmarksToJson(HandLandmarks instance) =>
       'landmarks': instance.landmarks.map((e) => e.toJson()).toList(),
     };
 
-LandmarksPayload _$LandmarksPayloadFromJson(Map<String, dynamic> json) =>
-    LandmarksPayload(
-      left: json['left'] == null
-          ? null
-          : HandLandmarks.fromJson(json['left'] as Map<String, dynamic>),
-      right: json['right'] == null
-          ? null
-          : HandLandmarks.fromJson(json['right'] as Map<String, dynamic>),
-      timestamp: (json['timestamp'] as num).toInt(),
-      sessionId: json['sessionId'] as String,
+PoseLandmarks _$PoseLandmarksFromJson(Map<String, dynamic> json) =>
+    PoseLandmarks(
+      landmarks: (json['landmarks'] as List<dynamic>)
+          .map((e) => Landmark.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
 
-Map<String, dynamic> _$LandmarksPayloadToJson(LandmarksPayload instance) =>
+Map<String, dynamic> _$PoseLandmarksToJson(PoseLandmarks instance) =>
     <String, dynamic>{
-      'left': instance.left?.toJson(),
-      'right': instance.right?.toJson(),
-      'timestamp': instance.timestamp,
-      'sessionId': instance.sessionId,
+      'landmarks': instance.landmarks.map((e) => e.toJson()).toList(),
     };
+
+HolisticLandmarksPayload _$HolisticLandmarksPayloadFromJson(
+  Map<String, dynamic> json,
+) => HolisticLandmarksPayload(
+  pose: json['pose'] == null
+      ? null
+      : PoseLandmarks.fromJson(json['pose'] as Map<String, dynamic>),
+  left: json['left'] == null
+      ? null
+      : HandLandmarks.fromJson(json['left'] as Map<String, dynamic>),
+  right: json['right'] == null
+      ? null
+      : HandLandmarks.fromJson(json['right'] as Map<String, dynamic>),
+  timestamp: (json['timestamp'] as num).toInt(),
+  sessionId: json['sessionId'] as String,
+);
+
+Map<String, dynamic> _$HolisticLandmarksPayloadToJson(
+  HolisticLandmarksPayload instance,
+) => <String, dynamic>{
+  'pose': instance.pose?.toJson(),
+  'left': instance.left?.toJson(),
+  'right': instance.right?.toJson(),
+  'timestamp': instance.timestamp,
+  'sessionId': instance.sessionId,
+};

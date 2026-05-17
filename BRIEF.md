@@ -4,12 +4,14 @@
 
 Ứng dụng **giao tiếp 2 chiều** giữa người khiếm thính và người bình thường, hỗ trợ trên **Web & Mobile**. Sử dụng **Ngôn ngữ Ký hiệu Việt Nam (VSL)**, hỗ trợ tiếng Việt.
 
+> Ghi chú scope v1: Avatar 3D là tầm nhìn v2+. Trong v1, luồng người bình thường nói → người khiếm thính nhận **text/subtitle**; không plan/execute avatar trừ khi roadmap được đổi lại.
+
 ### Hai tác nhân chính
 
 | Tác nhân | Vai trò |
 |---|---|
 | **Người khiếm thính** | Thực hiện ký hiệu → hệ thống chuyển thành âm thanh + text |
-| **Người bình thường** | Nói bằng giọng nói → hệ thống chuyển thành text + Avatar 3D thực hiện ký hiệu |
+| **Người bình thường** | Nói bằng giọng nói → hệ thống chuyển thành text/subtitle trong v1; Avatar 3D là v2+ |
 
 ### Ngữ cảnh sử dụng chính
 - **Bệnh viện**: Bệnh nhân khiếm thính giao tiếp với bác sĩ/nhân viên y tế
@@ -37,8 +39,8 @@ Người bình thường nói bằng giọng nói
     → AI nhận diện giọng nói (Speech-to-Text)
     → Chuyển thành văn bản tiếng Việt
     → Hiển thị text (subtitle) trên màn hình
-    → Avatar 3D thực hiện cử chỉ ký hiệu tương ứng
-    → Người khiếm thính xem text + avatar 3D
+    → V1: Người khiếm thính xem text/subtitle
+    → V2+: Avatar 3D thực hiện cử chỉ ký hiệu tương ứng
 ```
 
 ---
@@ -56,7 +58,7 @@ Hai người ngồi cạnh nhau, dùng chung **1 thiết bị**.
 
 Cả 2 bên đều sử dụng app. Gọi video **trong app** (không qua nền tảng bên thứ 3).
 
-- **Phía người khiếm thính**: Xem video đối phương + text subtitle + Avatar 3D ký hiệu
+- **Phía người khiếm thính**: Xem video đối phương + text subtitle trong v1; Avatar 3D là v2+
 - **Phía người bình thường**: Xem video đối phương + nghe âm thanh TTS + đọc text
 
 ---
@@ -85,13 +87,13 @@ Cả 2 bên đều sử dụng app. Gọi video **trong app** (không qua nền 
 
 ---
 
-### Module 3: Nhận diện Giọng nói (Audio → Text → Avatar 3D)
+### Module 3: Nhận diện Giọng nói (Audio → Text; Avatar 3D v2+)
 
 | Chức năng | Mô tả |
 |---|---|
 | Speech-to-Text | Nhận diện giọng nói tiếng Việt, chuyển thành text |
 | Hiển thị subtitle | Text hiện trên màn hình cho người khiếm thính đọc |
-| Avatar 3D | Avatar (nam hoặc nữ) thực hiện cử chỉ ký hiệu tương ứng với nội dung text |
+| Avatar 3D | V2+: Avatar (nam hoặc nữ) thực hiện cử chỉ ký hiệu tương ứng với nội dung text |
 
 **Avatar 3D**:
 - 2 model: **Nam** và **Nữ**
@@ -106,7 +108,7 @@ Cả 2 bên đều sử dụng app. Gọi video **trong app** (không qua nền 
 |---|---|
 | Gọi video 1-1 | Gọi video trong app, cả 2 bên dùng app |
 | Nhận diện ký hiệu trong cuộc gọi | Real-time, bên khiếm thính ra ký hiệu → bên kia nghe + đọc |
-| Avatar 3D trong cuộc gọi | Bên bình thường nói → bên khiếm thính xem avatar + text |
+| Avatar 3D trong cuộc gọi | V2+: Bên bình thường nói → bên khiếm thính xem avatar + text |
 | Thông báo cuộc gọi đến | Push notification khi có người gọi |
 
 ---

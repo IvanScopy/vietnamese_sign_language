@@ -4,7 +4,7 @@ Vietnamese Sign Language (VSL) Bridge mobile application for real-time two-way c
 
 ## Features
 
-- **Real-time Sign Recognition**: Uses MediaPipe HandLandmarker to detect hand gestures
+- **Real-time Sign Recognition**: Uses MediaPipe Holistic to detect 67 landmarks (pose + both hands)
 - **Server-based Classification**: Streams landmarks to backend for VSL classification
 - **Text Display**: Shows recognized signs in an editable text panel
 - **Audio Playback**: Plays TTS audio for completed phrases
@@ -37,22 +37,12 @@ flutter pub get
 ### 3. Permissions
 
 #### Android
-The app automatically requests camera permission at runtime. No additional setup needed.
+The app automatically requests camera permission at runtime. The AndroidManifest.xml includes the required permissions.
 
 #### iOS
 The `Info.plist` includes `NSCameraUsageDescription` for camera access.
 
-### 4. Add MediaPipe Model
-
-Download the hand landmarker model:
-
-1. Download from: https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task
-2. Place the file in `mobile/assets/hand_landmarker.task`
-3. The model file is referenced in `pubspec.yaml`
-
-**Note:** The model file is NOT included in the repository due to size. You must download it separately.
-
-### 5. Generate Code
+### 4. Generate Code
 
 ```bash
 cd mobile
@@ -115,6 +105,7 @@ The app supports configuration via environment variables:
 | `VSL_SERVER_PORT` | Recognition service port | `8000` |
 | `VSL_ENV` | Environment: dev/staging/prod | `dev` |
 | `VSL_USE_MOCK` | Use mock landmarks instead of MediaPipe | `false` |
+| `VSL_USE_HOLISTIC` | Use full Holistic (pose+hands) vs hands-only | `true` |
 
 ### Environment-specific defaults
 
@@ -130,21 +121,28 @@ mobile/
 │   ├── config/
 │   │   └── app_config.dart       # Environment configuration
 │   ├── models/
-│   │   ├── landmark.dart         # Hand landmark data models
+│   │   ├── landmark.dart         # Landmark data models (Landmark, HandLandmarks, PoseLandmarks, HolisticLandmarksPayload)
 │   │   ├── landmark.g.dart       # Generated JSON serialization
-│   │   ├── recognition_event.dart
-│   │   └── recognition_event.g.dart
+│   │   └── ...
 │   ├── screens/
 │   │   └── recognition_screen.dart  # Main recognition UI
 │   ├── services/
 │   │   ├── buffer_manager.dart       # Client-side sliding window
 │   │   └── sign_recognition_service.dart  # Socket.io connection
 │   ├── widgets/
-│   │   ├── camera_preview.dart       # Camera + MediaPipe integration
+│   │   ├── camera_preview.dart       # Camera + MediaPipe Holistic integration (native Android plugin)
 │   │   └── text_panel.dart           # Recognized signs display
 │   └── main.dart                     # App entry point
-├── assets/
-│   └── hand_landmarker.task      # MediaPipe model (download separately)
+├── android/
+│   ├── app/
+│   │   ├── build.gradle.kts          # Android build config with MediaPipe dependencies
+│   │   └── src/main/
+│   │       ├── AndroidManifest.xml   # Permissions (camera, internet)
+│   │       ├── kotlin/co/vslbridge/  # Native plugin source
+│   │       │   ├── MainActivity.kt
+│   │       │   └── MediaPipeHolisticPlugin.kt
+│   │       └── consumer-rules.pro    # ProGuard rules for MediaPipe
+│   └── ...
 ├── test/
 │   ├── services/
 │   │   ├── buffer_manager_test.dart
@@ -162,12 +160,12 @@ mobile/
 
 1. **Camera Frame Capture** (`CameraPreviewWithMediaPipe`)
    - Captures YUV frames at configurable FPS (default 15)
-   - Processes frames through MediaPipe HandLandmarker
-   - Emits normalized landmark data (21 points per hand)
+   - Sends frames to native Android MediaPipe Holistic plugin via MethodChannel
+   - Receives holistic landmarks via EventChannel (67 total landmarks)
 
 2. **Feature Extraction** (`BufferManager`)
    - Accumulates frames into sliding window (default 30 frames)
-   - Extracts 126-dimensional feature vector (x,y,z for 21 landmarks per hand)
+   - Extracts 201-dimensional feature vector (67 landmarks × 3D coordinates)
    - Emits sign events when window is full
 
 3. **Server Communication** (`SignRecognitionService`)
@@ -183,64 +181,47 @@ mobile/
 ### Data Flow
 
 ```
-Camera → MediaPipe → LandmarksPayload → BufferManager → SignRecognitionService
-                                                              ↓
-                                                      Recognition Results
-                                                              ↓
-                                                      TextPanel + Audio
+Camera → Native MediaPipe Holistic → HolisticLandmarksPayload → BufferManager → SignRecognitionService
+                                                                                ↓
+                                                                        Recognition Results
+                                                                                ↓
+                                                                        TextPanel + Audio
 ```
 
-## Adding the Real VSL Model
-
-The current implementation uses **mock landmarks** for architecture demonstration. To enable real VSL recognition:
-
-1. **Download the MediaPipe model** (see Setup step 4)
-
-2. **Uncomment MediaPipe code** in `lib/widgets/camera_preview.dart`:
-
-   ```dart
-   // In _initializeHandLandmarker() and _processFrame(), uncomment the MediaPipe code
-   ```
-
-3. **Update the backend** (`recognition-service/`) to use the actual VSL classification model
-
-4. **Test the pipeline**:
-
-   ```bash
-   flutter run --verbose
-   ```
-
-   Check logs for:
-   - `MediaPipe HandLandmarker initialized successfully`
-   - Landmark coordinates being emitted
-   - Recognition results appearing in the text panel
-
-## Debugging
-
-### View Latency Metrics
-
-Latency measurements are logged to console in debug mode:
+### Feature Vector Format (201 dimensions)
 
 ```
-[Latency] Current processing delay: Xms, Average: Yms
-[Latency WARNING] Processing latency Zms exceeds 1000ms threshold!
+[pose25×3, left_hand21×3, right_hand21×3]
+  75       63             63          = 201
 ```
 
-### Enable Verbose Logging
+## Android Setup Requirements
 
-```bash
-flutter run --verbose
+### MediaPipe Dependencies
+
+The Android build includes MediaPipe Holistic via Maven:
+
+```kotlin
+// android/app/build.gradle.kts
+dependencies {
+    implementation("com.google.mediapipe:holistic:0.10.14")
+    implementation("com.google.mediapipe:solution_utils:0.1.0")
+}
 ```
 
-### Common Issues
+### Native Plugin
 
-| Issue | Solution |
-|-------|----------|
-| Camera not initializing | Check camera permissions in Android/iOS settings |
-| No landmarks detected | Ensure adequate lighting, hand visible to camera |
-| Connection refused | Verify backend server is running at configured URL/port |
-| Model not loading | Confirm `assets/hand_landmarker.task` exists |
-| High latency (>1s) | Reduce `targetFps`, ensure backend has GPU support |
+The `MediaPipeHolisticPlugin.kt` provides:
+- MethodChannel for initialization and frame processing
+- EventChannel for streaming landmark results
+- GPU-accelerated inference via MediaPipe
+
+### Build Considerations
+
+- **APK Size**: MediaPipe adds ~15-20MB to the APK
+- **Memory**: Holistic model uses ~100-150MB RAM during processing
+- **GPU**: Enable GPU delegate for best performance (enabled by default)
+- **ProGuard**: Consumer rules included to preserve MediaPipe classes
 
 ## Testing
 
@@ -286,7 +267,6 @@ cd recognition-service
 | Package | Version | Purpose |
 |---------|---------|---------|
 | flutter | ^3.11.5 | UI framework |
-| flutter_mediapipe | ^0.0.7 | Hand landmark detection |
 | camera | ^0.12.0+1 | Camera access |
 | socket_io_client | ^3.1.4 | WebSocket communication |
 | shared_preferences | ^2.3.3 | Token storage |
@@ -310,12 +290,22 @@ cd recognition-service
 - Minimum SDK: 21 (Android 5.0)
 - Camera2 API used via camera plugin
 - GPU acceleration for MediaPipe recommended
+- MediaPipe Holistic delivered via AAR from Google Maven
 
 ### iOS
 
-- Minimum iOS version: 12.0
-- Camera permission must be in Info.plist (included)
-- GPU delegate for MediaPipe automatically used on A12+ devices
+- **Status**: Not yet implemented (Phase 2B planned)
+- Minimum iOS version will be 12.0
+- Native iOS MediaPipe Holistic plugin needed
+
+## Known Issues
+
+| Issue | Workaround |
+|-------|------------|
+| Large APK size (~25MB) | Expected due to MediaPipe; use app bundles |
+| High memory usage on low-end devices | Reduce `targetFps` in config |
+| Front camera mirrored | Coordinate transformation needed |
+| YUV→RGB conversion overhead | Consider native YUV processing in future |
 
 ## License
 

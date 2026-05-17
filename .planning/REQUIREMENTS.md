@@ -13,7 +13,7 @@
 - [ ] **COMM-01**: Real-time sign language recognition for 100-200 VSL signs via camera input, displaying recognized text within 500ms
 - [x] **COMM-02**: Speech-to-text transcription of Vietnamese speech, displayed as subtitles within 1 second
 - [x] **COMM-03**: Text-to-speech output converting text to natural Vietnamese audio
-- [ ] **COMM-04**: Split-screen conversation mode showing camera preview and conversation text/speech output
+- [x] **COMM-04**: Split-screen conversation mode showing camera preview and conversation text/speech output
 - [ ] **COMM-05**: Video calling between registered users (1:1) using WebRTC with audio/video
 - [ ] **COMM-06**: AI-assisted sign feedback for practice exercises (camera-guided sign recognition with accuracy scoring)
 
@@ -26,19 +26,19 @@
 
 #### User Accounts & Safety
 
-- [ ] **ACC-01**: User registration with email/password (deaf or hearing user type selection)
-- [ ] **ACC-02**: Login/logout with session persistence
-- [ ] **ACC-03**: Profile management (name, age, user type)
-- [ ] **ACC-04**: Emergency contacts linking (phone numbers for SOS)
+- [x] **ACC-01**: User registration with email/password (deaf or hearing user type selection)
+- [x] **ACC-02**: Login/logout with session persistence
+- [x] **ACC-03**: Profile management (name, age, user type)
+- [x] **ACC-04**: Emergency contacts linking (phone numbers for SOS)
 - [ ] **EMERG-01**: SOS button sends SMS with GPS location to emergency contacts
 - [ ] **EMERG-02**: SOS button also triggers local emergency services (dial 115 in Vietnam)
 
 #### Conversation History
 
-- [ ] **HIST-01**: Text-only conversation history stored locally on device
-- [ ] **HIST-02**: View past conversations with timestamps
-- [ ] **HIST-03**: Search within conversation history
-- [ ] **HIST-04**: Share conversation via copy text or export
+- [x] **HIST-01**: Text-only conversation history stored locally on device
+- [x] **HIST-02**: View past conversations with timestamps
+- [x] **HIST-03**: Search within conversation history
+- [x] **HIST-04**: Share conversation via copy text or export
 
 #### Notifications
 
@@ -127,50 +127,50 @@
 
 ## Traceability
 
-This section populated by roadmap creation.
+This section is aligned to `.planning/ROADMAP.md`. Avatar requirements remain v2+ and are intentionally not assigned to a v1 phase.
 
 | Requirement ID | Phase | Status |
 |----------------|-------|--------|
-| COMM-01 | — | — |
+| COMM-01 | 02 | Validation Pending |
 | COMM-02 | 01 | Completed |
 | COMM-03 | 01 | Completed |
-| COMM-04 | — | — |
-| COMM-05 | — | — |
-| COMM-06 | — | — |
-| DICT-01 | — | — |
-| DICT-02 | — | — |
-| DICT-03 | — | — |
-| DICT-04 | — | — |
-| ACC-01 | — | — |
-| ACC-02 | — | — |
-| ACC-03 | — | — |
-| ACC-04 | — | — |
+| COMM-04 | 03 | Completed |
+| COMM-05 | 04 | Pending |
+| COMM-06 | 02 | Partial |
+| DICT-01 | 06 | Pending |
+| DICT-02 | 06 | Pending |
+| DICT-03 | 06 | Pending |
+| DICT-04 | 06 | Pending |
+| ACC-01 | 01 | Completed |
+| ACC-02 | 01 | Completed |
+| ACC-03 | 01 | Completed |
+| ACC-04 | 01 | Completed |
 | AUTH-04 | 1 | Completed |
 | AUTH-05 | 1 | Completed |
-| EMERG-01 | — | — |
-| EMERG-02 | — | — |
-| HIST-01 | — | — |
-| HIST-02 | — | — |
-| HIST-03 | — | — |
-| HIST-04 | — | — |
-| NOTIF-01 | — | — |
-| NOTIF-02 | — | — |
-| MOB-01 | — | — |
-| MOB-02 | — | — |
-| MOB-03 | — | — |
+| EMERG-01 | 05 | Pending |
+| EMERG-02 | 05 | Pending |
+| HIST-01 | 03 | Completed |
+| HIST-02 | 03 | Completed |
+| HIST-03 | 03 | Completed |
+| HIST-04 | 03 | Completed |
+| NOTIF-01 | 04 | Pending |
+| NOTIF-02 | 05 | Pending |
+| MOB-01 | 06 | Pending |
+| MOB-02 | 06 | Pending |
+| MOB-03 | 02 | Validation Pending |
 | PLAT-01 | 1 | Completed |
 | PLAT-02 | 1 | Completed |
 | PLAT-03 | 1 | Completed |
-| PLAT-04 | — | — |
-| PLAT-05 | — | — |
-| MOB-04 | — | — |
-| MOB-05 | — | — |
-| WEB-01 | — | — |
-| WEB-02 | — | — |
-| WEB-03 | — | — |
-| WEB-04 | — | — |
-| ADMIN-01 | — | — |
-| ADMIN-02 | — | — |
-| ADMIN-03 | — | — |
-| ADMIN-04 | — | — |
-| ADMIN-05 | — | — |
+| PLAT-04 | 06 | Pending |
+| PLAT-05 | 06 | Pending |
+| MOB-04 | 05 | Pending |
+| MOB-05 | 05 | Pending |
+| WEB-01 | 06 | Pending |
+| WEB-02 | 04 | Pending |
+| WEB-03 | 06 | Pending |
+| WEB-04 | 06 | Pending |
+| ADMIN-01 | 06 | Pending |
+| ADMIN-02 | 06 | Pending |
+| ADMIN-03 | 06 | Pending |
+| ADMIN-04 | 06 | Pending |
+| ADMIN-05 | 06 | Pending |

@@ -43,6 +43,7 @@ export async function POST(request: NextRequest) {
         password: hashedPassword,
         name,
         userType,
+        isActive: true,
       },
     })
 
@@ -63,6 +64,8 @@ export async function POST(request: NextRequest) {
     // Set httpOnly cookies
     const response = NextResponse.json({
       user: { id: user.id, email: user.email, name: user.name, userType: user.userType },
+      accessToken,
+      refreshToken,
     })
 
     response.cookies.set('accessToken', accessToken, {

@@ -8,6 +8,7 @@ jest.mock('@/app/lib/db', () => ({
       create: jest.fn(),
       update: jest.fn(),
       findMany: jest.fn(),
+      count: jest.fn(),
       delete: jest.fn(),
     },
     refreshToken: {
@@ -58,6 +59,7 @@ jest.mock('@/app/lib/db', () => ({
       findFirst: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
+      upsert: jest.fn(),
       count: jest.fn(),
     },
     dictionaryCategory: {
@@ -65,6 +67,7 @@ jest.mock('@/app/lib/db', () => ({
       findUnique: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
+      upsert: jest.fn(),
       count: jest.fn(),
     },
     lessonPlaceholder: {
@@ -79,6 +82,16 @@ jest.mock('@/app/lib/db', () => ({
       findMany: jest.fn(),
       count: jest.fn(),
     },
+    broadcastMessage: {
+      create: jest.fn(),
+      findMany: jest.fn(),
+      findUnique: jest.fn(),
+      update: jest.fn(),
+    },
+    dictionaryUpload: {
+      create: jest.fn(),
+      findMany: jest.fn(),
+    },
     callSession: {
       create: jest.fn(),
       findUnique: jest.fn(),
@@ -87,7 +100,7 @@ jest.mock('@/app/lib/db', () => ({
     },
     $queryRaw: jest.fn(),
     $executeRaw: jest.fn(),
-    $transaction: jest.fn(async (fn) => fn),
+    $transaction: jest.fn(async (fn) => fn((jest.requireMock('@/app/lib/db') as { prisma: unknown }).prisma)),
   },
 }))
 

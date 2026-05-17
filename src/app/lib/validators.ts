@@ -102,3 +102,45 @@ export const TwilioStatusCallbackSchema = z.object({
   ErrorCode: z.string().optional(),
   ErrorMessage: z.string().optional(),
 })
+
+export const DictionaryEntryPayloadSchema = z.object({
+  slug: z.string().min(1),
+  vietnameseText: z.string().min(1),
+  categoryId: z.number().int().positive(),
+  videoUrl: z.string().url().optional().nullable(),
+  videoKey: z.string().min(1).optional().nullable(),
+  thumbnailUrl: z.string().url().optional().nullable(),
+  thumbnailKey: z.string().min(1).optional().nullable(),
+  keywords: z.array(z.string()).default([]),
+  status: z.enum(['DRAFT', 'NEEDS_REVIEW', 'PUBLISHED', 'UNPUBLISHED']).default('DRAFT'),
+})
+
+export const DictionaryStatusSchema = z.object({
+  status: z.enum(['DRAFT', 'NEEDS_REVIEW', 'PUBLISHED', 'UNPUBLISHED']),
+})
+
+export const AdminUserUpdateSchema = z.object({
+  active: z.boolean().optional(),
+  adminRole: z.enum(['Super Admin', 'Content Admin', 'Support Admin']).optional(),
+  userType: z.enum(['DEAF', 'HEARING', 'PARENT', 'TEACHER']).optional(),
+})
+
+export const LessonPlaceholderSchema = z.object({
+  slug: z.string().min(1),
+  title: z.string().min(1),
+  description: z.string().optional(),
+  isPublished: z.boolean().default(false),
+})
+
+export const StoragePresignSchema = z.object({
+  key: z.string().min(1),
+  contentType: z.enum(['video/mp4', 'image/jpeg', 'image/png', 'image/webp']),
+})
+
+export const BroadcastPreviewSchema = z.object({
+  mode: z.enum(['preview', 'confirm']),
+  targetGroup: z.string().min(1),
+  previewToken: z.string().optional(),
+  title: z.string().min(1),
+  body: z.string().min(1),
+})

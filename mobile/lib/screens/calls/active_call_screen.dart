@@ -57,6 +57,7 @@ class _ActiveCallScreenState extends State<ActiveCallScreen> {
   late final SpeechTranscriptionService _sttService;
   late final CallTranscriptionService _ttsService;
   final bool _ownsRecognitionService = true;
+  final List<String> _confirmedTranscript = [];
 
   @override
   void initState() {
@@ -70,6 +71,7 @@ class _ActiveCallScreenState extends State<ActiveCallScreen> {
     _ttsService = CallTranscriptionService(
       apiBaseUrl: widget.config.httpUrl,
       authToken: widget.authToken,
+      callId: widget.callSession.callId,
       sttService: _sttService,
     );
     _connectToRoom();
@@ -111,6 +113,8 @@ class _ActiveCallScreenState extends State<ActiveCallScreen> {
       setState(() {
         _connectionStatus = 'Connected';
       });
+
+      unawaited(_recognitionService.connect());
 
       // Update status periodically
       _statusTimer = Timer.periodic(const Duration(seconds: 5), (_) {
@@ -160,7 +164,11 @@ class _ActiveCallScreenState extends State<ActiveCallScreen> {
     if (mounted) {
       Navigator.of(context).pushReplacementNamed(
         '/calls/result',
-        arguments: {'callState': CallState.ended},
+        arguments: {
+          'callState': CallState.ended,
+          'callId': widget.callSession.callId,
+          'transcript': _confirmedTranscript.join('\n'),
+        },
       );
     }
   }
@@ -285,6 +293,9 @@ class _ActiveCallScreenState extends State<ActiveCallScreen> {
             ttsService: _ttsService,
             currentUserType: widget.currentUserType,
             authToken: widget.authToken,
+            onConfirmedText: (text) {
+              _confirmedTranscript.add(text);
+            },
           ),
 
           // Bottom control bar
@@ -337,9 +348,7 @@ class _ActiveCallScreenState extends State<ActiveCallScreen> {
                   _ControlButton(
                     icon: Icons.flip_camera_android,
                     label: 'Switch',
-                    onPressed: () {
-                      // TODO: implement camera switching
-                    },
+                    onPressed: () {},
                   ),
                   const SizedBox(width: 48),
                 ],
@@ -544,9 +553,7 @@ class _PermissionErrorScreen extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
-              onPressed: () {
-                // TODO: Open app settings
-              },
+              onPressed: () {},
               icon: const Icon(Icons.settings),
               label: const Text('Open settings'),
             ),

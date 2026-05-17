@@ -37,6 +37,17 @@ class _OutgoingCallScreenState extends State<OutgoingCallScreen> {
   void initState() {
     super.initState();
     _setupSignalingListeners();
+    unawaited(_connectSignaling());
+  }
+
+  Future<void> _connectSignaling() async {
+    try {
+      await widget.callSignalingService.connect();
+    } catch (_) {
+      if (mounted) {
+        _goToResult(CallState.failed);
+      }
+    }
   }
 
   void _setupSignalingListeners() {
@@ -108,6 +119,7 @@ class _OutgoingCallScreenState extends State<OutgoingCallScreen> {
     _rejectedSub?.cancel();
     _missedSub?.cancel();
     _busySub?.cancel();
+    unawaited(widget.callSignalingService.dispose());
     super.dispose();
   }
 

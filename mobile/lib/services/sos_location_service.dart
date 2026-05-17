@@ -56,13 +56,18 @@ class RealGeolocatorAdapter implements GeolocatorAdapter {
       Geolocator.isLocationServiceEnabled();
 
   @override
-  Future<Position?> getCurrentPosition({Duration? timeLimit}) =>
-      Geolocator.getCurrentPosition(
+  Future<Position?> getCurrentPosition({Duration? timeLimit}) async {
+    try {
+      return await Geolocator.getCurrentPosition(
         locationSettings: LocationSettings(
           accuracy: LocationAccuracy.high,
           timeLimit: timeLimit ?? const Duration(seconds: 5),
         ),
-      ).then((p) => p).catchError((_) => null);
+      );
+    } catch (_) {
+      return null;
+    }
+  }
 
   @override
   Future<Position?> getLastKnownPosition() =>

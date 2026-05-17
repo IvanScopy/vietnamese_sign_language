@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/app/lib/db'
-import { verifyAccessToken } from '@/app/lib/auth'
+import { getAuthenticatedUser } from '@/app/lib/request-auth'
 import { z } from 'zod'
 
 const UpdateProfileSchema = z.object({
@@ -10,16 +10,9 @@ const UpdateProfileSchema = z.object({
 
 export async function GET(request: NextRequest) {
   try {
-    // Get access token from cookie
-    const accessToken = request.cookies.get('accessToken')?.value
-
-    if (!accessToken) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const payload = await verifyAccessToken(accessToken)
+    const payload = await getAuthenticatedUser(request)
     if (!payload) {
-      return NextResponse.json({ error: 'Invalid or expired token' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const user = await prisma.user.findUnique({
@@ -29,6 +22,7 @@ export async function GET(request: NextRequest) {
         email: true,
         name: true,
         userType: true,
+        isActive: true,
         emergencyContacts: {
           select: { id: true, name: true, phone: true }
         },
@@ -49,13 +43,7 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const accessToken = request.cookies.get('accessToken')?.value
-
-    if (!accessToken) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const payload = await verifyAccessToken(accessToken)
+    const payload = await getAuthenticatedUser(request)
     if (!payload) {
       return NextResponse.json({ error: 'Invalid or expired token' }, { status: 401 })
     }
@@ -83,6 +71,7 @@ export async function PUT(request: NextRequest) {
         email: true,
         name: true,
         userType: true,
+        isActive: true,
         emergencyContacts: {
           select: { id: true, name: true, phone: true }
         },

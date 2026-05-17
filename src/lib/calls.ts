@@ -94,22 +94,17 @@ export async function acceptCall(callId: number, userId: number) {
     throw new Error('Call session not found after accept')
   }
 
-  const [callerToken, calleeToken] = await Promise.all([
-    generateLiveKitToken({
-      roomName: callSession.roomName,
-      participantName: 'caller',
-      userId: callSession.callerId,
-    }),
-    generateLiveKitToken({
-      roomName: callSession.roomName,
-      participantName: 'callee',
-      userId: callSession.calleeId,
-    }),
-  ])
+  const calleeToken = await generateLiveKitToken({
+    roomName: callSession.roomName,
+    participantName: 'callee',
+    userId: callSession.calleeId,
+  })
 
   return {
+    callId: callSession.id,
+    id: callSession.id,
+    state: callSession.state,
     roomName: callSession.roomName,
-    callerToken,
     calleeToken,
   }
 }
@@ -118,7 +113,7 @@ export async function acceptCall(callId: number, userId: number) {
  * Reject an incoming call. Atomic transition from RINGING to REJECTED.
  */
 export async function rejectCall(callId: number, userId: number): Promise<void> {
-  await prisma.callSession.updateMany({
+  const result = await prisma.callSession.updateMany({
     where: {
       id: callId,
       calleeId: userId,
@@ -128,13 +123,17 @@ export async function rejectCall(callId: number, userId: number): Promise<void> 
       state: 'REJECTED',
     },
   })
+
+  if (result.count !== 1) {
+    throw new Error('Call unavailable')
+  }
 }
 
 /**
  * Cancel an outgoing call. Atomic transition from RINGING to CANCELLED.
  */
 export async function cancelCall(callId: number, callerId: number): Promise<void> {
-  await prisma.callSession.updateMany({
+  const result = await prisma.callSession.updateMany({
     where: {
       id: callId,
       callerId: callerId,
@@ -144,6 +143,10 @@ export async function cancelCall(callId: number, callerId: number): Promise<void
       state: 'CANCELLED',
     },
   })
+
+  if (result.count !== 1) {
+    throw new Error('Call unavailable')
+  }
 }
 
 /**

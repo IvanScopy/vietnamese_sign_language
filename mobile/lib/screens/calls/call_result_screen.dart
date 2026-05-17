@@ -17,6 +17,7 @@ class CallResultScreen extends StatefulWidget {
   final CallState callState;
   final String? callerName;
   final int? callId;
+  final String? transcript;
   final AppConfig? config;
   final String? authToken;
 
@@ -25,6 +26,7 @@ class CallResultScreen extends StatefulWidget {
     required this.callState,
     this.callerName,
     this.callId,
+    this.transcript,
     this.config,
     this.authToken,
   });
@@ -35,14 +37,18 @@ class CallResultScreen extends StatefulWidget {
 
 class _CallResultScreenState extends State<CallResultScreen> {
   bool _isSaving = false;
-  bool _isDiscarding = false;
 
   Future<void> _saveTranscript() async {
     final callId = widget.callId;
     final config = widget.config;
     final authToken = widget.authToken;
+    final transcript = widget.transcript?.trim();
 
-    if (callId == null || config == null || authToken == null) {
+    if (callId == null ||
+        config == null ||
+        authToken == null ||
+        transcript == null ||
+        transcript.isEmpty) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Transcript saving unavailable')),
@@ -60,7 +66,7 @@ class _CallResultScreenState extends State<CallResultScreen> {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $authToken',
         },
-        body: jsonEncode({'transcript': ''}),
+        body: jsonEncode({'transcript': transcript}),
       );
 
       if (!mounted) return;
@@ -182,12 +188,7 @@ class _CallResultScreenState extends State<CallResultScreen> {
                           // Discard button
                           OutlinedButton.icon(
                             onPressed: _isSaving ? null : _discardTranscript,
-                            icon: _isDiscarding
-                                ? const SizedBox.square(
-                                    dimension: 16,
-                                    child: CircularProgressIndicator(strokeWidth: 2),
-                                  )
-                                : const Icon(Icons.delete_outline),
+                            icon: const Icon(Icons.delete_outline),
                             label: const Text('Discard'),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: const Color(0xFFDC2626),

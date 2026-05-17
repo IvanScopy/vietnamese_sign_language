@@ -33,6 +33,7 @@ class CallTranslationOverlay extends StatefulWidget {
   final CallTranscriptionService ttsService;
   final UserType currentUserType;
   final String authToken;
+  final ValueChanged<String>? onConfirmedText;
 
   const CallTranslationOverlay({
     super.key,
@@ -41,6 +42,7 @@ class CallTranslationOverlay extends StatefulWidget {
     required this.ttsService,
     required this.currentUserType,
     required this.authToken,
+    this.onConfirmedText,
   });
 
   @override
@@ -50,9 +52,9 @@ class CallTranslationOverlay extends StatefulWidget {
 class _CallTranslationOverlayState extends State<CallTranslationOverlay> {
   String _draftText = '';
   double? _draftConfidence;
-  String _subtitleText = '';
-  String _receivedSignText = '';
-  bool _isTranscribing = false;
+  final String _subtitleText = '';
+  final String _receivedSignText = '';
+  final bool _isTranscribing = false;
   bool _isPlayingTTS = false;
 
   StreamSubscription<dynamic>? _signSubscription;
@@ -129,6 +131,7 @@ class _CallTranslationOverlayState extends State<CallTranslationOverlay> {
     if (text.isEmpty) return;
 
     await widget.ttsService.sendTranscriptToHearingUser(text);
+    widget.onConfirmedText?.call(text);
 
     if (!mounted) return;
     setState(() {
@@ -142,6 +145,7 @@ class _CallTranslationOverlayState extends State<CallTranslationOverlay> {
     if (text.isEmpty) return;
 
     await widget.ttsService.sendTranscriptToHearingUser(text);
+    widget.onConfirmedText?.call(text);
 
     if (!mounted) return;
     setState(() {
@@ -245,9 +249,9 @@ class _CallTranslationOverlayState extends State<CallTranslationOverlay> {
         margin: const EdgeInsets.symmetric(horizontal: 16),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: const Color(0xFF101010).withOpacity(0.85),
+          color: const Color(0xFF101010).withValues(alpha: 0.85),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -311,12 +315,12 @@ class _SignDraftSection extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFF101010).withOpacity(0.85),
+        color: const Color(0xFF101010).withValues(alpha: 0.85),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
           color: isLowConfidence
               ? const Color(0xFFF59E0B)
-              : Colors.white.withOpacity(0.1),
+              : Colors.white.withValues(alpha: 0.1),
         ),
       ),
       child: Column(
@@ -395,7 +399,7 @@ class _SubtitleSection extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF101010).withOpacity(0.72),
+        color: const Color(0xFF101010).withValues(alpha: 0.72),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(

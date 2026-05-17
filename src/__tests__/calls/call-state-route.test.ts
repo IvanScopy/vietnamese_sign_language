@@ -9,6 +9,8 @@ const mockVerifyAccessToken = verifyAccessToken as jest.MockedFunction<
 >
 const mockFindUnique = prisma.callSession
   .findUnique as jest.MockedFunction<typeof prisma.callSession.findUnique>
+const mockUserFindUnique = prisma.user
+  .findUnique as jest.MockedFunction<typeof prisma.user.findUnique>
 
 const makeRequest = (headers: Record<string, string> = {}) =>
   new NextRequest('http://localhost:3000/api/calls/42', { headers })
@@ -37,6 +39,7 @@ describe('GET /api/calls/[callId]', () => {
       email: 'caller@example.com',
       userType: 'DEAF',
     })
+    mockUserFindUnique.mockResolvedValue({ isActive: true } as never)
   })
 
   test('returns 401 when unauthenticated', async () => {

@@ -10,17 +10,26 @@ import 'package:mobile/screens/conversation_history_screen.dart';
 import 'package:mobile/screens/conversation_screen.dart';
 import 'package:mobile/screens/recognition_screen.dart';
 import 'package:mobile/screens/sos_screen.dart';
+import 'package:mobile/services/auth_service.dart';
 import 'package:mobile/services/call_api_service.dart';
 import 'package:mobile/services/call_signaling_service.dart';
+import 'package:mobile/services/dictionary_service.dart';
 import 'package:mobile/services/livekit_call_service.dart';
 import 'package:mobile/services/push_notification_service.dart';
 import 'package:mobile/services/sos_api_service.dart';
 import 'package:mobile/services/sos_location_service.dart';
 import 'package:mobile/services/sos_platform_service.dart';
+import 'package:mobile/widgets/app_shell.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // Global navigator key for push notification routing
 final navigatorKey = GlobalKey<NavigatorState>();
+
+int? _parseRouteInt(Object? value) {
+  if (value is int) return value;
+  if (value is String) return int.tryParse(value);
+  return null;
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -66,10 +75,27 @@ class VSLBridgeApp extends StatelessWidget {
       title: 'VSL Bridge',
       navigatorKey: navigatorKey,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF2563EB),
+          error: const Color(0xFFDC2626),
+        ),
         useMaterial3: true,
       ),
-      home: HomeScreen(config: config, authToken: authToken),
+      home: VslAppShell(
+        authToken: authToken,
+        sessionState: authToken.isEmpty ? VslSessionState.expired : VslSessionState.authenticated,
+        dictionaryService: DictionaryService(
+          authToken: authToken,
+          baseUrl: config.httpUrl,
+        ),
+        authService: AuthService(baseUrl: config.httpUrl),
+        communicateBuilder: (_) => HomeScreen(config: config, authToken: authToken),
+        sosBuilder: (_) => SosScreen(
+          sosApiService: SosApiService(authToken: authToken, baseUrl: config.httpUrl),
+          locationService: SosLocationService(),
+          platformService: SosPlatformService(),
+        ),
+      ),
       routes: {
         '/recognition': (context) => RecognitionScreen(
           serverUrl: config.serverUrl,
@@ -85,8 +111,15 @@ class VSLBridgeApp extends StatelessWidget {
         switch (settings.name) {
           case '/calls/incoming':
             final args = settings.arguments as Map<String, dynamic>?;
-            final callId = args?['callId'] as int? ?? 0;
+            final callId = _parseRouteInt(args?['callId']);
             final fromUserName = args?['fromUserName'] as String?;
+            if (callId == null || callId < 1) {
+              return MaterialPageRoute(
+                builder: (_) => const Scaffold(
+                  body: Center(child: Text('Invalid call notification')),
+                ),
+              );
+            }
             return MaterialPageRoute(
               builder: (_) => IncomingCallScreen(
                 callApiService: CallApiService(
@@ -148,10 +181,16 @@ class VSLBridgeApp extends StatelessWidget {
             final args = settings.arguments as Map<String, dynamic>?;
             final callState = args?['callState'] as CallState? ?? CallState.ended;
             final callerName = args?['callerName'] as String?;
+            final resultCallId = _parseRouteInt(args?['callId']);
+            final transcript = args?['transcript'] as String?;
             return MaterialPageRoute(
               builder: (_) => CallResultScreen(
                 callState: callState,
                 callerName: callerName,
+                callId: resultCallId,
+                transcript: transcript,
+                config: config,
+                authToken: authToken,
               ),
             );
 

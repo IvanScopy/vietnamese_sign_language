@@ -13,12 +13,14 @@ import 'package:mobile/services/speech_transcription_service.dart';
 class CallTranscriptionService {
   final String apiBaseUrl;
   final String authToken;
+  final int? callId;
   final SpeechTranscriptionService _sttService;
   final http.Client _httpClient;
 
   CallTranscriptionService({
     required this.apiBaseUrl,
     required this.authToken,
+    this.callId,
     SpeechTranscriptionService? sttService,
   })  : _sttService = sttService ?? SpeechTranscriptionService(apiBaseUrl: apiBaseUrl),
         _httpClient = http.Client();
@@ -71,10 +73,23 @@ class CallTranscriptionService {
   /// This sends the text via the API so it can be relayed to the other
   /// participant via Socket.io or stored for the call transcript.
   Future<void> sendTranscriptToHearingUser(String text) async {
-    // For v1, this is a no-op placeholder — the text is displayed locally
-    // and the hearing user sees it via the existing Socket.io signaling.
-    // A dedicated endpoint can be added when real-time text relay is needed.
-    // The text will be saved via the transcript save endpoint after the call.
+    final targetCallId = callId;
+    final trimmed = text.trim();
+    if (targetCallId == null || trimmed.isEmpty) return;
+
+    final uri = Uri.parse('$apiBaseUrl/api/calls/$targetCallId/transcript');
+    final response = await _httpClient.post(
+      uri,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $authToken',
+      },
+      body: jsonEncode({'transcript': trimmed}),
+    );
+
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw TTSException('Transcript relay failed with status ${response.statusCode}');
+    }
   }
 
   /// Dispose of HTTP client resources.

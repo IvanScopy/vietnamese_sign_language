@@ -7,8 +7,8 @@ export type CallResultState = 'ended' | 'missed' | 'rejected' | 'cancelled' | 'b
 export interface CallResultProps {
   state: CallResultState
   onRetry?: () => void
-  onHome: () => void
-  onSaveTranscript?: () => void
+  onHome: () => void | Promise<void>
+  onSaveTranscript?: () => void | Promise<void>
 }
 
 const stateConfig: Record<CallResultState, { heading: string; body?: string }> = {

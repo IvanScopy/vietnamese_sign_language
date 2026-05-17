@@ -1,37 +1,21 @@
-import 'dart:convert';
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
-import 'package:audioplayers/audioplayers.dart';
 import 'package:mobile/models/recognition_event.dart';
 import 'package:mobile/widgets/text_panel.dart';
 
-class MockAudioPlayer extends Mock implements AudioPlayer {}
-
 void main() {
   group('TextPanel', () {
-    late MockAudioPlayer mockAudioPlayer;
-
-    setUpAll(() {
-      // Register fallback for BytesSource parameter (non-const, so use null)
-      registerFallbackValue(BytesSource(Uint8List(0)));
-    });
-
-    setUp(() {
-      mockAudioPlayer = MockAudioPlayer();
-    });
-
     testWidgets('shows empty state when signs is empty', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: TextPanel(signs: []),
-          ),
+          home: Scaffold(body: TextPanel(signs: [])),
         ),
       );
 
-      expect(find.text('Start signing to see recognition results'), findsOneWidget);
+      expect(
+        find.text('Start signing to see recognition results'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('displays signs as editable text fields', (tester) async {
@@ -42,9 +26,7 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: TextPanel(signs: signs),
-          ),
+          home: Scaffold(body: TextPanel(signs: signs)),
         ),
       );
 
@@ -54,10 +36,10 @@ void main() {
       expect(find.text('87%'), findsOneWidget);
     });
 
-    testWidgets('shows phrase complete indicator when isPhraseComplete', (tester) async {
-      final signs = [
-        RecognitionResult(sign: 'xin_chào', confidence: 0.95),
-      ];
+    testWidgets('shows phrase complete indicator when isPhraseComplete', (
+      tester,
+    ) async {
+      final signs = [RecognitionResult(sign: 'xin_chào', confidence: 0.95)];
 
       await tester.pumpWidget(
         MaterialApp(
@@ -76,9 +58,7 @@ void main() {
     });
 
     testWidgets('hides audio button when audioData is null', (tester) async {
-      final signs = [
-        RecognitionResult(sign: 'xin_chào', confidence: 0.95),
-      ];
+      final signs = [RecognitionResult(sign: 'xin_chào', confidence: 0.95)];
 
       await tester.pumpWidget(
         MaterialApp(
@@ -96,15 +76,11 @@ void main() {
     });
 
     testWidgets('confidence colors: green for high', (tester) async {
-      final signs = [
-        RecognitionResult(sign: 'test', confidence: 0.9),
-      ];
+      final signs = [RecognitionResult(sign: 'test', confidence: 0.9)];
 
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: TextPanel(signs: signs),
-          ),
+          home: Scaffold(body: TextPanel(signs: signs)),
         ),
       );
 
@@ -113,15 +89,11 @@ void main() {
     });
 
     testWidgets('confidence colors: orange for medium', (tester) async {
-      final signs = [
-        RecognitionResult(sign: 'test', confidence: 0.7),
-      ];
+      final signs = [RecognitionResult(sign: 'test', confidence: 0.7)];
 
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: TextPanel(signs: signs),
-          ),
+          home: Scaffold(body: TextPanel(signs: signs)),
         ),
       );
 
@@ -129,15 +101,11 @@ void main() {
     });
 
     testWidgets('confidence colors: red for low', (tester) async {
-      final signs = [
-        RecognitionResult(sign: 'test', confidence: 0.4),
-      ];
+      final signs = [RecognitionResult(sign: 'test', confidence: 0.4)];
 
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: TextPanel(signs: signs),
-          ),
+          home: Scaffold(body: TextPanel(signs: signs)),
         ),
       );
 
@@ -145,9 +113,7 @@ void main() {
     });
 
     testWidgets('audio playback button appears with audioData', (tester) async {
-      final signs = [
-        RecognitionResult(sign: 'xin_chào', confidence: 0.95),
-      ];
+      final signs = [RecognitionResult(sign: 'xin_chào', confidence: 0.95)];
 
       await tester.pumpWidget(
         MaterialApp(
@@ -166,10 +132,10 @@ void main() {
       expect(playButton, findsOneWidget);
     });
 
-    testWidgets('audio playback handles decode errors gracefully', (tester) async {
-      final signs = [
-        RecognitionResult(sign: 'xin_chào', confidence: 0.95),
-      ];
+    testWidgets('audio playback handles decode errors gracefully', (
+      tester,
+    ) async {
+      final signs = [RecognitionResult(sign: 'xin_chào', confidence: 0.95)];
 
       await tester.pumpWidget(
         MaterialApp(
@@ -191,10 +157,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Error snackbar should appear
-      expect(
-        find.textContaining('Failed to play audio'),
-        findsOneWidget,
-      );
+      expect(find.textContaining('Failed to play audio'), findsOneWidget);
     });
   });
 }

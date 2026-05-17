@@ -14,6 +14,15 @@ interface IncomingCallEvent {
   type: 'VIDEO_CALL'
 }
 
+interface ProfileResponse {
+  user?: {
+    id: number
+    userType?: string
+  }
+  id?: number
+  userType?: string
+}
+
 export default function CallsPage() {
   const router = useRouter()
   const socketRef = useRef<Socket | null>(null)
@@ -21,24 +30,39 @@ export default function CallsPage() {
   const [callerName, setCallerName] = useState<string>('')
   const [users, setUsers] = useState<Array<{ id: number; name: string }>>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [currentUser, setCurrentUser] = useState<{ id: number; userType: string } | null>(null)
 
   // Fetch available users for call initiation
   useEffect(() => {
-    async function fetchUsers() {
+    async function fetchPageData() {
       try {
-        const response = await fetch('/api/users', { credentials: 'include' })
-        if (response.ok) {
-          const data = await response.json()
+        const [profileResponse, usersResponse] = await Promise.all([
+          fetch('/api/user/profile', { credentials: 'include' }),
+          fetch('/api/users', { credentials: 'include' }),
+        ])
+
+        if (profileResponse.ok) {
+          const profile = (await profileResponse.json()) as ProfileResponse
+          const user = profile.user ?? profile
+          if (typeof user.id === 'number') {
+            setCurrentUser({
+              id: user.id,
+              userType: user.userType || 'HEARING',
+            })
+          }
+        }
+
+        if (usersResponse.ok) {
+          const data = await usersResponse.json()
           setUsers(data.users || [])
         }
       } catch {
-        // Users endpoint may not exist yet — show empty state
         setUsers([])
       } finally {
         setIsLoading(false)
       }
     }
-    fetchUsers()
+    fetchPageData()
   }, [])
 
   // Set up Socket.io connection for incoming call events
@@ -49,8 +73,12 @@ export default function CallsPage() {
     })
     socketRef.current = socket
 
-    // Register with socket server once authenticated user ID is available
-    // For now, listen for incoming call events
+    socket.on('connect', () => {
+      if (currentUser) {
+        socket.emit('register', currentUser.id, currentUser.userType)
+      }
+    })
+
     socket.on('call:incoming', (data: IncomingCallEvent) => {
       setIncomingCall(data)
       setCallerName(data.fromUserName || 'Unknown caller')
@@ -67,7 +95,7 @@ export default function CallsPage() {
     return () => {
       socket.disconnect()
     }
-  }, [])
+  }, [currentUser])
 
   const handleAccept = async () => {
     if (!incomingCall) return

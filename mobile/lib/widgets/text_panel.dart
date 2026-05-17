@@ -90,9 +90,9 @@ class _TextPanelState extends State<TextPanel> {
             children: [
               Text(
                 'Recognized Signs',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
               ),
               if (widget.isPhraseComplete && widget.audioData != null)
                 IconButton(
@@ -182,7 +182,7 @@ class _TextPanelState extends State<TextPanel> {
         );
       }
     } catch (e, stackTrace) {
-      print('Audio playback error: $e\n$stackTrace');
+      debugPrint('Audio playback error: $e\n$stackTrace');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -252,10 +252,7 @@ class _SignBubble extends StatelessWidget {
               // Confidence percentage
               Text(
                 '${(confidence * 100).toInt()}%',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
-                ),
+                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
               ),
             ],
           ),

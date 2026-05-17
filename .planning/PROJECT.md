@@ -2,7 +2,7 @@
 
 ## What This Is
 
-A bilingual communication and learning application that enables real-time two-way communication between deaf and hearing people using Vietnamese Sign Language (VSL). The app uses AI to recognize sign language gestures and convert them to speech/text, and converts speech to text with a 3D avatar signing the response. The platform serves deaf children, their parents, and hearing peers, with a focus on educational accessibility and emotional connection.
+A bilingual communication and learning application that enables real-time two-way communication between deaf and hearing people using Vietnamese Sign Language (VSL). For v1, the app uses AI to recognize sign language gestures and convert them to speech/text, and converts speech to text subtitles for deaf users. A 3D avatar signing system is deferred to v2+ because animation quality and VSL coverage are high-risk. The platform serves deaf children, their parents, and hearing peers, with a focus on educational accessibility and emotional connection.
 
 ## Core Value
 
@@ -17,10 +17,10 @@ Enable deaf children and hearing people (parents, peers) to communicate and lear
 ### Active
 
 - [ ] **COMM-01**: Real-time sign language recognition (camera input → text + speech output)
-- [ ] **COMM-02**: Speech recognition and text display (speech → text subtitles)
-- [ ] **COMM-03**: 3D avatar signing system (text → animated VSL gestures)
-- [ ] **COMM-04**: Video calling with integrated communication features
-- [ ] **COMM-05**: Split-screen real-time conversation mode (face-to-face)
+- [x] **COMM-02**: Speech recognition and text display (speech → text subtitles)
+- [x] **COMM-03**: Text-to-speech output converting text to Vietnamese audio
+- [ ] **COMM-04**: Split-screen real-time conversation mode (face-to-face)
+- [ ] **COMM-05**: Video calling with integrated communication features
 - [ ] **DICT-01**: Sign language dictionary with 4,000 VSL gesture videos
 - [ ] **LEARN-01**: Learning system with lessons organized by topic
 - [ ] **LEARN-02**: Quizzes and practice exercises with camera feedback
@@ -40,6 +40,12 @@ Enable deaf children and hearing people (parents, peers) to communicate and lear
 - [ ] **ADMIN-02**: Admin panel for dictionary/content management
 - [ ] **ADMIN-03**: Admin panel for lesson management
 - [ ] **ADMIN-04**: Admin panel for SOS logs and statistics
+
+### Future / v2+
+
+- [ ] **AVATAR-01**: 3D avatar signing system (text → animated VSL gestures)
+- [ ] **AVATAR-02**: Male and female avatar options
+- [ ] **AVATAR-03**: Real-time avatar animation synchronized with speech/text
 
 ### Out of Scope
 
@@ -78,7 +84,7 @@ Enable deaf children and hearing people (parents, peers) to communicate and lear
   - Target architecture: LSTM with MediaPipe landmarks
   - Concern: Pre-trained models may have limited coverage of VSL
   - Latency requirement: Comparable to texting (sub-second response)
-- **3D Avatar System** - Important but potentially cuttable if technical challenges prove too difficult
+- **3D Avatar System** - Deferred to v2+; do not plan or execute avatar work during v1 unless scope is explicitly changed
 - **Inference Location** - Undecided: device-side vs server-side (smartphone capability for LSTM+MediaPipe unknown)
 
 **Known Challenges:**
@@ -101,7 +107,7 @@ Enable deaf children and hearing people (parents, peers) to communicate and lear
 |----------|-----------|---------|
 | Mobile-first with web secondary | Camera access and portability essential for real-world use | — Pending |
 | Use pre-trained recognition model | Model training is too complex for v1 timeline | — Pending |
-| 3D avatar included if feasible | Significant user experience impact; may be cut if technically prohibitive | — Pending |
+| 3D avatar deferred to v2+ | Animation quality and VSL motion coverage are too risky for the v1 workflow | Deferred |
 | Open-source stack preferred | Cost control and community support | — Pending |
 
 ---

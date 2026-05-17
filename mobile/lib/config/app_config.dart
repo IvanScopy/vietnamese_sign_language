@@ -61,7 +61,7 @@ class AppConfig {
     int targetFps = 15,
     int maxNumHands = 2,
     double minDetectionConfidence = 0.5,
-    required String liveKitUrl,
+    String liveKitUrl = 'ws://localhost:7880',
   }) {
     return AppConfig._internal(
       environment: environment,

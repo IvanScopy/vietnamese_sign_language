@@ -21,11 +21,14 @@ describe('GET /api/user/profile', () => {
       email: 'test@example.com',
       name: 'Test User',
       userType: 'HEARING',
+      isActive: true,
       createdAt: new Date(),
       emergencyContacts: [],
     }
 
-    ;(prisma.user.findUnique as jest.Mock).mockResolvedValue(mockUser)
+    ;(prisma.user.findUnique as jest.Mock)
+      .mockResolvedValueOnce({ isActive: true })
+      .mockResolvedValueOnce(mockUser)
 
     const request = new NextRequest('http://localhost:3000/api/user/profile', {
       method: 'GET',
@@ -61,7 +64,9 @@ describe('GET /api/user/profile', () => {
   })
 
   it('should return 404 when user not found', async () => {
-    ;(prisma.user.findUnique as jest.Mock).mockResolvedValue(null)
+    ;(prisma.user.findUnique as jest.Mock)
+      .mockResolvedValueOnce({ isActive: true })
+      .mockResolvedValueOnce(null)
 
     const request = new NextRequest('http://localhost:3000/api/user/profile', {
       method: 'GET',
@@ -88,6 +93,7 @@ describe('PUT /api/user/profile', () => {
       emergencyContacts: [],
     }
 
+    ;(prisma.user.findUnique as jest.Mock).mockResolvedValue({ isActive: true })
     ;(prisma.user.update as jest.Mock).mockResolvedValue(mockUpdatedUser)
 
     const request = new NextRequest('http://localhost:3000/api/user/profile', {
@@ -111,6 +117,7 @@ describe('PUT /api/user/profile', () => {
       emergencyContacts: [],
     }
 
+    ;(prisma.user.findUnique as jest.Mock).mockResolvedValue({ isActive: true })
     ;(prisma.user.update as jest.Mock).mockResolvedValue(mockUpdatedUser)
 
     const request = new NextRequest('http://localhost:3000/api/user/profile', {
@@ -126,6 +133,8 @@ describe('PUT /api/user/profile', () => {
   })
 
   it('should return 400 for invalid userType', async () => {
+    ;(prisma.user.findUnique as jest.Mock).mockResolvedValue({ isActive: true })
+
     const request = new NextRequest('http://localhost:3000/api/user/profile', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', 'Cookie': 'accessToken=mock-token' },

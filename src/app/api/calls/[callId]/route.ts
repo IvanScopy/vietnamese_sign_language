@@ -7,11 +7,6 @@ export async function GET(
   { params }: { params: Promise<{ callId: string }> },
 ) {
   try {
-    const payload = await getAuthenticatedUser(request)
-    if (!payload) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
     const { callId: callIdStr } = await params
     if (!/^\d+$/.test(callIdStr)) {
       return NextResponse.json({ error: 'Invalid call ID' }, { status: 400 })
@@ -20,6 +15,11 @@ export async function GET(
     const callId = Number(callIdStr)
     if (!Number.isSafeInteger(callId) || callId < 1) {
       return NextResponse.json({ error: 'Invalid call ID' }, { status: 400 })
+    }
+
+    const payload = await getAuthenticatedUser(request)
+    if (!payload) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const callSession = await prisma.callSession.findUnique({

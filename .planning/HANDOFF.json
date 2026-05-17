@@ -1,63 +1,61 @@
 {
   "version": "1.0",
-  "timestamp": "2025-05-05T17:32:00Z",
-  "phase": "01",
-  "phase_name": "foundation-authentication",
-  "phase_dir": ".planning/phases/01-foundation-authentication",
+  "timestamp": "2026-05-12T00:00:00+07:00",
+  "phase": "02",
+  "phase_name": "sign-recognition-mvp",
+  "phase_dir": ".planning/phases/02-sign-language-recognition",
   "plan": null,
-  "task": "planning",
+  "task": "roadmap-reconciliation",
   "total_tasks": null,
-  "status": "paused",
+  "status": "validation-pending",
   "completed_tasks": [
     {
       "id": 1,
-      "name": "Discuss phase — capture implementation decisions",
+      "name": "Phase 1 Foundation & Authentication",
       "status": "done"
     },
     {
       "id": 2,
-      "name": "Research phase — verify technical approaches",
+      "name": "Phase 2 Sign Recognition MVP implementation waves",
+      "status": "implemented"
+    },
+    {
+      "id": 3,
+      "name": "Roadmap reconciliation: defer avatar to v2+",
       "status": "done"
     }
   ],
   "remaining_tasks": [
     {
-      "id": 3,
-      "name": "Plan phase — create PLAN.md with task breakdown"
+      "id": 4,
+      "name": "Decide whether to validate Phase 2 now or proceed to Phase 3 with validation gaps documented"
+    },
+    {
+      "id": 5,
+      "name": "Run $gsd-discuss-phase 3 for Face-to-Face Conversation & History"
     }
   ],
-  "blockers": [],
-  "human_actions_pending": [],
+  "blockers": [
+    {
+      "name": "Real VSL model sourcing",
+      "impact": "Blocks marking Phase 2 fully complete"
+    },
+    {
+      "name": "Physical mobile device validation",
+      "impact": "Blocks confidence in camera/MediaPipe/latency behavior"
+    }
+  ],
+  "human_actions_pending": [
+    "Confirm whether Phase 2 validation should be completed before starting Phase 3"
+  ],
   "decisions": [
     {
-      "decision": "STT/TTS hybrid strategy pattern (cloud primary + self-hosted fallback)",
-      "rationale": "Low budget, moderate ops complexity acceptable, accuracy prioritized over open-source",
-      "phase": "1"
-    },
-    {
-      "decision": "JWT auth with 15min access + 7d refresh rotation",
-      "rationale": "Stateless scaling, secure token management",
-      "phase": "1"
-    },
-    {
-      "decision": "Hybrid notifications (Socket.io + FCM/APNs)",
-      "rationale": "In-app real-time + reliable background SOS alerts",
-      "phase": "1"
-    },
-    {
-      "decision": "Single VPS ($6-10/mo) with Docker Compose",
-      "rationale": "Simple deployment, all-in-one for demo",
-      "phase": "1"
-    },
-    {
-      "decision": "Monolithic REST API with OpenAPI codegen",
-      "rationale": "Simplify maintenance, shared types across platforms",
-      "phase": "1"
+      "decision": "3D avatar signing is deferred to v2+",
+      "rationale": "Avatar quality and VSL animation coverage are too risky for v1; v1 uses subtitles/text/TTS",
+      "phase": "all"
     }
   ],
-  "uncommitted_files": [
-    ".planning/phases/01-foundation-authentication/.continue-here.md"
-  ],
-  "next_action": "Run: /gsd-plan-phase 1",
-  "context_notes": "Discuss and research complete. Planner needs to create PLAN.md based on 45KB of research guidance. Research confidence HIGH on core stack decisions."
+  "uncommitted_files": [],
+  "next_action": "Run: $gsd-discuss-phase 3 after the Phase 2 validation decision",
+  "context_notes": "ROADMAP.md, STATE.md, REQUIREMENTS.md, PROJECT.md, BRIEF.md, and stale next-phase references were reconciled on 2026-05-12. Avatar work must stay out of v1 unless roadmap scope changes."
 }

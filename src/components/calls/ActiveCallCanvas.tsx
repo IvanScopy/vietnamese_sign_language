@@ -21,15 +21,18 @@ export interface ActiveCallCanvasProps {
   roomName: string
   callId: number
   serverUrl: string
-  onEnd: () => void
+  onEnd: () => void | Promise<void>
+  onTranscriptText?: (text: string) => void
 }
 
 function CallContent({
   callId,
   onEnd,
+  onTranscriptText,
 }: {
   callId: number
-  onEnd: () => void
+  onEnd: () => void | Promise<void>
+  onTranscriptText?: (text: string) => void
 }) {
   const room = useRoomContext()
   const [isMuted, setIsMuted] = useState(false)
@@ -38,6 +41,7 @@ function CallContent({
   const [subtitle, setSubtitle] = useState('')
   const [draftText, setDraftText] = useState('')
   const [confidence, setConfidence] = useState<number | undefined>(undefined)
+  const [confirmedTranscript, setConfirmedTranscript] = useState<string[]>([])
 
   const tracks = useTracks([Track.Source.Camera, Track.Source.Microphone])
 
@@ -155,7 +159,7 @@ function CallContent({
           </button>
           <button
             type="button"
-            onClick={onEnd}
+            onClick={handleEndCall}
             style={{
               height: 44,
               padding: '0 24px',
@@ -242,10 +246,16 @@ function CallContent({
           <SignDraftOverlay
             draftText={draftText}
             confidence={confidence}
-            onConfirm={() => setDraftText('')}
+            onConfirm={() => {
+              const next = [...confirmedTranscript, draftText]
+              setConfirmedTranscript(next)
+              onTranscriptText?.(next.join('\n'))
+              setDraftText('')
+            }}
             onConfirmAndPlay={() => {
-              // v1 placeholder: TTS synthesis will be wired when backend is ready
-              console.log('Confirm & Play:', draftText)
+              const next = [...confirmedTranscript, draftText]
+              setConfirmedTranscript(next)
+              onTranscriptText?.(next.join('\n'))
               setDraftText('')
             }}
           />
@@ -277,6 +287,7 @@ export default function ActiveCallCanvas({
   callId,
   serverUrl,
   onEnd,
+  onTranscriptText,
 }: ActiveCallCanvasProps) {
   const [error, setError] = useState<string | null>(null)
 
@@ -307,7 +318,7 @@ export default function ActiveCallCanvas({
           onHome={onEnd}
         />
       ) : (
-        <CallContent callId={callId} onEnd={onEnd} />
+        <CallContent callId={callId} onEnd={onEnd} onTranscriptText={onTranscriptText} />
       )}
     </LiveKitRoom>
   )

@@ -5,6 +5,9 @@
 
 # testing
 /coverage
+.pytest_cache/
+__pycache__/
+*.pyc
 
 # next.js
 /.next/
@@ -25,6 +28,11 @@ yarn-error.log*
 # local env files
 .env*.local
 .env
+.claude/
+.backups/
+data/
+data-video12-5/
+demo_model/
 
 # vercel
 .vercel

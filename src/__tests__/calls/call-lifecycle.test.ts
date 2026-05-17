@@ -11,6 +11,13 @@ import {
 } from '@/lib/calls'
 import { prisma } from '@/app/lib/db'
 
+jest.mock('livekit-server-sdk', () => ({
+  AccessToken: jest.fn().mockImplementation(() => ({
+    addGrant: jest.fn(),
+    toJwt: jest.fn().mockResolvedValue('mock.jwt.token' as never),
+  })),
+}))
+
 const mockPrisma = prisma as jest.Mocked<typeof prisma>
 
 describe('Call Lifecycle', () => {
@@ -57,4 +64,38 @@ describe('Call Lifecycle', () => {
   test.todo('checkBusy returns true for user with ACTIVE call')
 
   test.todo('checkBusy returns false for user with no active calls')
+
+  test('acceptCall returns only callee token and call identity fields', async () => {
+    mockPrisma.callSession.updateMany.mockResolvedValueOnce({ count: 1 } as never)
+    mockPrisma.callSession.findUnique.mockResolvedValueOnce({
+      id: 42,
+      roomName: 'vsl-room',
+      callerId: 1,
+      calleeId: 2,
+      state: 'ACTIVE',
+    } as never)
+
+    const result = await acceptCall(42, 2)
+
+    expect(result).toMatchObject({
+      callId: 42,
+      id: 42,
+      state: 'ACTIVE',
+      roomName: 'vsl-room',
+      calleeToken: expect.any(String),
+    })
+    expect(result).not.toHaveProperty('callerToken')
+  })
+
+  test('rejectCall throws when no authorized transition occurs', async () => {
+    mockPrisma.callSession.updateMany.mockResolvedValueOnce({ count: 0 } as never)
+
+    await expect(rejectCall(42, 99)).rejects.toThrow('Call unavailable')
+  })
+
+  test('cancelCall throws when no authorized transition occurs', async () => {
+    mockPrisma.callSession.updateMany.mockResolvedValueOnce({ count: 0 } as never)
+
+    await expect(cancelCall(42, 99)).rejects.toThrow('Call unavailable')
+  })
 })
