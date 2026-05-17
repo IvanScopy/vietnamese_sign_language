@@ -52,6 +52,33 @@ jest.mock('@/app/lib/db', () => ({
       findMany: jest.fn(),
       deleteMany: jest.fn(),
     },
+    dictionaryEntry: {
+      findMany: jest.fn(),
+      findUnique: jest.fn(),
+      findFirst: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+      count: jest.fn(),
+    },
+    dictionaryCategory: {
+      findMany: jest.fn(),
+      findUnique: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+      count: jest.fn(),
+    },
+    lessonPlaceholder: {
+      findMany: jest.fn(),
+      findUnique: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+      count: jest.fn(),
+    },
+    adminAuditLog: {
+      create: jest.fn(),
+      findMany: jest.fn(),
+      count: jest.fn(),
+    },
     callSession: {
       create: jest.fn(),
       findUnique: jest.fn(),
