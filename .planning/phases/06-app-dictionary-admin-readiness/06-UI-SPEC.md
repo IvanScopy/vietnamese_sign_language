@@ -61,7 +61,7 @@ Use exactly these four text sizes across web/admin/mobile unless platform defaul
 Rules:
 
 - Use only weights 400 and 600.
-- Use 12px only for timestamps, helper text, table metadata, and status captions already present in call/history UI.
+- Use Label for timestamps, helper text, table metadata, status captions, and other compact secondary text.
 - Do not use negative letter spacing. Uppercase labels may use `0.05em` only for compact status labels such as incoming-call headings.
 - Vietnamese dictionary terms use Heading or Display size on detail pages, never all caps.
 - Admin tables use Body for row values and Label for column headers/actions.
