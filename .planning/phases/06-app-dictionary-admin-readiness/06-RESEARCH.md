@@ -80,7 +80,7 @@
 | WEB-03 | Webcam access for browser recognition | Use `navigator.mediaDevices.getUserMedia()` in a secure context and stream landmarks/results through existing recognition pipeline. [CITED: developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia] |
 | WEB-04 | Shared account system with mobile app | Reuse existing JWT/cookie auth for web and Bearer token path for mobile; fix profile endpoints to support both. [VERIFIED: src/app/lib/request-auth.ts] |
 | DICT-01 | Searchable dictionary of 4,000 videos | Add Prisma dictionary models, import script, publication states, CDN URL/key fields, and user-facing list/detail APIs. [VERIFIED: prisma/schema.prisma + 06-CONTEXT.md] |
-| DICT-02 | Video playback with controls | Use native HTML5 video on web and Flutter video playback controls if a mobile video dependency is added; direct CDN URLs are locked. [ASSUMED] |
+| DICT-02 | Video playback with controls | Use native HTML5 video on web and the official Flutter `video_player` package on mobile for direct CDN/network MP4 playback, play/pause, seek, replay, speed choices, and fullscreen shell integration. Direct CDN URLs are locked. [VERIFIED: pub.dev/packages/video_player; CITED: docs.flutter.dev/cookbook/plugins/play-video] |
 | DICT-03 | Vietnamese partial search | Store normalized search text/keywords and use PostgreSQL indexes; `unaccent` supports diacritic removal for text search. [CITED: postgresql.org/docs/15/unaccent.html] |
 | DICT-04 | Category/tag browsing | Model categories/topics as first-class records or stable enum-plus-table; expose browsable published counts. [ASSUMED] |
 | ADMIN-01 | Admin user management | Add admin roles, active/deactivated status, role-gated APIs, and audit log entries. [VERIFIED: 06-CONTEXT.md] |
@@ -130,6 +130,7 @@ The planner should treat dictionary search as a backend/data problem first, not 
 |---------|---------|---------|-------------|
 | `@aws-sdk/client-s3` | 3.1048.0 | S3-compatible object storage client | Use for admin one-off upload/replace metadata and optional server-side object checks. [VERIFIED: npm registry + slopcheck OK] |
 | `@aws-sdk/s3-request-presigner` | 3.1048.0 | Generate presigned URLs | Use to let admin browser/mobile upload directly to object storage without routing large video bytes through Next.js. [VERIFIED: npm registry + slopcheck OK; CITED: docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/migrate-s3.html] |
+| `video_player` | 2.11.1 | Flutter mobile dictionary video playback | Use the official Flutter package for network video playback and custom learning controls around play/pause, seek, replay, playback speed, and fullscreen routing. [VERIFIED: pub.dev/packages/video_player; CITED: docs.flutter.dev/cookbook/plugins/play-video] |
 | firebase-admin | 13.10.0 | Push notifications | Existing dependency for background notifications; broadcast can reuse it after target selection. [VERIFIED: package.json/npm registry] |
 | livekit-client/components | 2.x | Web video calls | Existing call pages already use LiveKit components and should remain separate from dictionary/admin work. [VERIFIED: package.json + src/app/calls] |
 
@@ -145,9 +146,10 @@ The planner should treat dictionary search as a backend/data problem first, not 
 
 ```bash
 npm install @aws-sdk/client-s3 @aws-sdk/s3-request-presigner
+cd mobile && flutter pub add video_player
 ```
 
-**Version verification:** `npm view` on 2026-05-17 returned `@aws-sdk/client-s3@3.1048.0` and `@aws-sdk/s3-request-presigner@3.1048.0`, both modified 2026-05-15. [VERIFIED: npm registry]
+**Version verification:** `npm view` on 2026-05-17 returned `@aws-sdk/client-s3@3.1048.0` and `@aws-sdk/s3-request-presigner@3.1048.0`, both modified 2026-05-15. `pub.dev/packages/video_player` on 2026-05-17 lists latest `video_player` as `2.11.1` from `flutter.dev`; Flutter docs use `flutter pub add video_player` for internet video playback. [VERIFIED: npm registry + pub.dev; CITED: docs.flutter.dev/cookbook/plugins/play-video]
 
 ## Package Legitimacy Audit
 
@@ -415,28 +417,29 @@ const stream = await navigator.mediaDevices.getUserMedia({
 
 | # | Claim | Section | Risk if Wrong |
 |---|-------|---------|---------------|
-| A1 | Native mobile dictionary video playback may require adding a Flutter video player dependency. | Phase Requirements | Planner may need package legitimacy checkpoint for Flutter video dependency. |
+| A1 | Native mobile dictionary video playback requires adding the official Flutter `video_player` dependency. | Phase Requirements | Resolved: plan must install `video_player` and implement actual network playback controls, not metadata-only playback. |
 | A2 | Category taxonomy can be chosen by planner if no authoritative VSL taxonomy exists. | User Constraints/Architecture | Browse UX may need user review before seeding categories. |
 | A3 | Persisted normalized search fields are preferable to per-request normalization. | Summary/Patterns | Search implementation may be less optimal if DB extension/index strategy differs. |
 | A4 | Admin authorization should use a shared role helper. | Architecture/Pitfalls | Ad hoc checks can drift across routes. |
-| A5 | Mobile secure token storage choice is not yet established. | Pitfalls | Using SharedPreferences for access tokens may be insufficient for production security. |
+| A5 | Mobile secure token storage choice is not yet established. | Pitfalls | Resolved for Phase 6: keep the existing `SharedPreferences` `auth_token` pattern for compatibility and document secure storage as a later hardening item unless already present. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Which S3-compatible provider/bucket/CDN will be used?**
    - What we know: object storage/CDN is locked and S3-compatible is preferred. [VERIFIED: 06-CONTEXT.md]
-   - What's unclear: provider, bucket names, CDN URL format, credentials, CORS policy. [ASSUMED]
-   - Recommendation: Planner should create a config/env task and a human checkpoint if credentials are absent. [ASSUMED]
+   - Resolution: implement provider-neutral S3-compatible storage through environment variables: `S3_ENDPOINT`, `S3_REGION`, `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_FORCE_PATH_STYLE`, and `DICTIONARY_CDN_BASE_URL`. Do not hard-code provider, bucket, or CDN values in source. Admin presign APIs must fail with an explicit configuration error when credentials are absent. [ASSUMED]
 
 2. **What is the source format for the 4,000-entry seed manifest?**
    - What we know: batch import is required and invalid rows become draft/needs_review. [VERIFIED: 06-CONTEXT.md]
-   - What's unclear: CSV/JSON schema, video key naming, thumbnail metadata, authoritative categories. [ASSUMED]
-   - Recommendation: Plan importer around an explicit manifest contract and include sample fixture tests. [ASSUMED]
+   - Resolution: Phase 6 seed import accepts CSV as the canonical operator format with headers `slug`, `vietnameseText`, `category`, `keywords`, `videoKey`, `videoUrl`, `thumbnailKey`, `thumbnailUrl`, and optional `status`. The importer may also accept JSON arrays with the same field names if cheap, but CSV fixture coverage is mandatory. Rows with missing `videoKey`/`videoUrl`, missing Vietnamese text, duplicate slug, or invalid category import as `NEEDS_REVIEW` or `DRAFT` and never appear in user APIs. [ASSUMED]
 
 3. **Should mobile use secure storage for tokens?**
    - What we know: mobile currently reads `auth_token` from SharedPreferences. [VERIFIED: mobile/lib/main.dart]
-   - What's unclear: whether adding `flutter_secure_storage` is acceptable in this phase. [ASSUMED]
-   - Recommendation: Discuss or checkpoint before installing a new Flutter auth-storage dependency. [ASSUMED]
+   - Resolution: Phase 6 keeps the existing `SharedPreferences` `auth_token` storage to avoid auth migration risk while adding session-expired handling and token refresh. Do not add `flutter_secure_storage` in Phase 6 unless it already exists in the repo; record secure token storage as future security hardening. [ASSUMED]
+
+4. **Which Flutter package provides mobile dictionary video playback?**
+   - What we know: mobile must deliver actual DICT-02/D-28 video playback from direct CDN URLs with play/pause/seek/replay/speed/fullscreen where supported. [VERIFIED: 06-CONTEXT.md + 06-UI-SPEC.md]
+   - Resolution: use official `video_player` `2.11.1` from `flutter.dev` via `cd mobile && flutter pub add video_player`. Build a small app-specific control layer for replay, speed choices `0.5x`, `0.75x`, `1x`, and fullscreen route/dialog behavior; do not reduce this to metadata-only tests. [VERIFIED: pub.dev/packages/video_player; CITED: docs.flutter.dev/cookbook/plugins/play-video]
 
 ## Environment Availability
 
