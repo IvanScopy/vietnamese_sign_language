@@ -1,0 +1,3 @@
+slug,vietnameseText,category,keywords,videoKey,videoUrl,thumbnailKey,thumbnailUrl,status
+missing-video,Xin chào,Greetings,"hello, greeting",,,,,
+,Thiếu slug,Greetings,"missing slug",videos/missing.mp4,https://cdn.example.com/videos/missing.mp4,,,

@@ -1,0 +1,370 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           Int       @id @default(autoincrement())
+  email        String    @unique
+  password     String    // bcrypt hash
+  name         String?
+  userType     UserType  @default(HEARING)
+  isActive     Boolean   @default(true)
+  adminRole    AdminRole?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  // Relations
+  refreshTokens              RefreshToken[]
+  emergencyContacts          EmergencyContact[]
+  linkedEmergencyContacts    EmergencyContact[] @relation("EmergencyContactLinkedUser")
+  deviceTokens               DeviceToken[]
+  notifications              Notification[]
+  sentSosAlerts              SOSAlert[] @relation("SOSAlertSender")
+  sosAlertReceivers          SOSAlertReceiver[]
+  callerCalls                CallSession[] @relation("CallSessionCaller")
+  calleeCalls                CallSession[] @relation("CallSessionCallee")
+  adminAuditLogs             AdminAuditLog[] @relation("AdminAuditActor")
+  sentBroadcasts             BroadcastMessage[] @relation("BroadcastSender")
+
+  @@map("users")
+}
+
+enum AdminRole {
+  SUPER_ADMIN
+  CONTENT_ADMIN
+  SUPPORT_ADMIN
+}
+
+model RefreshToken {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  expiresAt DateTime
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+enum UserType {
+  DEAF
+  HEARING
+  PARENT
+  TEACHER
+}
+
+model EmergencyContact {
+  id           Int      @id @default(autoincrement())
+  name         String
+  phone        String
+  phoneE164    String?
+  isActive     Boolean  @default(true)
+  userId       Int
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  linkedUserId Int?
+  linkedUser   User?    @relation("EmergencyContactLinkedUser", fields: [linkedUserId], references: [id], onDelete: SetNull)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  attempts     SosAlertAttempt[]
+
+  @@index([userId])
+  @@index([linkedUserId])
+  @@map("emergency_contacts")
+}
+
+model DeviceToken {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  platform  String   // 'ios', 'android', 'web'
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@map("device_tokens")
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  title     String
+  body      String
+  data      String?   // JSON string
+  priority  String   @default("normal")
+  type      String   @default("MESSAGE")
+  isRead    Boolean  @default(false)
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@map("notifications")
+}
+
+model SOSAlert {
+  id                       Int       @id @default(autoincrement())
+  userId                   Int
+  user                     User      @relation("SOSAlertSender", fields: [userId], references: [id], onDelete: Cascade)
+  location                 String?
+  latitude                 Float?
+  longitude                Float?
+  locationAccuracyMeters   Float?
+  locationCapturedAt       DateTime?
+  locationLabel            String?
+  smsBody                  String?
+  idempotencyKey           String?   @unique
+  sentAt                   DateTime?
+  nativeFallbackOpenedAt   DateTime?
+  closedAt                 DateTime?
+  status                   SOSStatus @default(ACTIVE)
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
+
+  // Emergency contacts who were notified
+  receivers SOSAlertReceiver[] @relation("SOSAlertReceiverRelation")
+  attempts  SosAlertAttempt[]
+
+  @@map("sos_alerts")
+}
+
+model SOSAlertReceiver {
+  id            Int      @id @default(autoincrement())
+  sosAlertId    Int
+  sosAlert      SOSAlert @relation("SOSAlertReceiverRelation", fields: [sosAlertId], references: [id], onDelete: Cascade)
+  contactId     Int
+  contact       User     @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  deliveredAt   DateTime?
+  acknowledgedAt DateTime?
+
+  @@map("sos_alert_receivers")
+}
+
+enum SOSStatus {
+  ACTIVE
+  RESOLVED
+  CANCELLED
+  SENDING
+  SENT
+  PARTIAL_FAILED
+  NATIVE_FALLBACK
+  FAILED
+}
+
+enum SOSDeliveryChannel {
+  PROVIDER_SMS
+  NATIVE_SMS
+  PUSH
+  SOCKET
+  DIALER
+}
+
+enum SOSAttemptStatus {
+  PROVIDER_QUEUED
+  PROVIDER_SENT
+  PROVIDER_DELIVERED
+  PROVIDER_FAILED
+  PROVIDER_UNDELIVERED
+  NATIVE_COMPOSER_OPENED
+  NATIVE_COMPOSER_FAILED
+  PUSH_SENT
+  PUSH_FAILED
+  SOCKET_EMITTED
+  DIALER_OPENED
+}
+
+model SosAlertAttempt {
+  id                   Int                @id @default(autoincrement())
+  sosAlertId           Int
+  sosAlert             SOSAlert           @relation(fields: [sosAlertId], references: [id], onDelete: Cascade)
+  emergencyContactId   Int?
+  emergencyContact     EmergencyContact?  @relation(fields: [emergencyContactId], references: [id], onDelete: SetNull)
+  recipientName        String?
+  recipientPhoneE164   String?
+  linkedUserId         Int?
+  channel              SOSDeliveryChannel
+  provider             String?
+  providerMessageSid   String?
+  providerStatus       String?
+  status               SOSAttemptStatus
+  errorCode            String?
+  errorMessage         String?
+  providerResponse     Json?
+  openedAt             DateTime?
+  queuedAt             DateTime?
+  sentAt               DateTime?
+  deliveredAt          DateTime?
+  failedAt             DateTime?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  @@index([sosAlertId])
+  @@index([emergencyContactId])
+  @@index([linkedUserId])
+  @@index([status])
+  @@index([providerMessageSid])
+  @@map("sos_alert_attempts")
+}
+
+enum CallState {
+  RINGING
+  ACTIVE
+  ENDED
+  REJECTED
+  CANCELLED
+  MISSED
+  BUSY
+  FAILED
+
+  @@map("call_state")
+}
+
+model CallSession {
+  id         Int       @id @default(autoincrement())
+  roomName   String    @unique
+  callerId   Int
+  caller     User      @relation("CallSessionCaller", fields: [callerId], references: [id], onDelete: Cascade, map: "callerId")
+  calleeId   Int
+  callee     User      @relation("CallSessionCallee", fields: [calleeId], references: [id], onDelete: Cascade, map: "calleeId")
+  state      CallState @default(RINGING)
+  expiresAt  DateTime
+  acceptedAt DateTime?
+  endedAt    DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([callerId])
+  @@index([calleeId])
+  @@index([state])
+  @@map("call_sessions")
+}
+
+model CallTranscript {
+  id        Int      @id @default(autoincrement())
+  callId    Int
+  userId    Int
+  text      String
+  createdAt DateTime @default(now())
+
+  @@index([callId])
+  @@index([userId])
+  @@map("call_transcripts")
+}
+
+enum DictionaryEntryStatus {
+  DRAFT
+  NEEDS_REVIEW
+  PUBLISHED
+  UNPUBLISHED
+}
+
+enum AdminAuditAction {
+  USER_DEACTIVATE
+  USER_REACTIVATE
+  ADMIN_ROLE_CHANGE
+  USER_TYPE_CHANGE
+  DICTIONARY_CREATE
+  DICTIONARY_UPDATE
+  DICTIONARY_PUBLISH
+  DICTIONARY_UNPUBLISH
+  BROADCAST_PREVIEW
+  BROADCAST_SEND
+  SOS_REVIEW
+  LESSON_PLACEHOLDER_UPDATE
+}
+
+model DictionaryCategory {
+  id          Int               @id @default(autoincrement())
+  slug        String            @unique
+  name        String
+  description String?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  entries     DictionaryEntry[]
+
+  @@index([name])
+  @@map("dictionary_categories")
+}
+
+model DictionaryEntry {
+  id            Int                   @id @default(autoincrement())
+  slug          String                @unique
+  vietnameseText String
+  searchText    String
+  keywords      Json?
+  status        DictionaryEntryStatus @default(DRAFT)
+  categoryId    Int
+  category      DictionaryCategory    @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  videoUrl      String?
+  videoKey      String?
+  thumbnailUrl  String?
+  thumbnailKey  String?
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+  uploads       DictionaryUpload[]
+
+  @@index([status])
+  @@index([categoryId])
+  @@index([searchText])
+  @@map("dictionary_entries")
+}
+
+model LessonPlaceholder {
+  id          Int      @id @default(autoincrement())
+  slug        String   @unique
+  title       String
+  description String?
+  isPublished Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("lesson_placeholders")
+}
+
+model AdminAuditLog {
+  id          Int              @id @default(autoincrement())
+  actorUserId Int
+  actorUser   User             @relation("AdminAuditActor", fields: [actorUserId], references: [id], onDelete: Cascade)
+  action      AdminAuditAction
+  targetType  String
+  targetId    String
+  metadata    Json?
+  createdAt   DateTime         @default(now())
+
+  @@index([actorUserId, createdAt])
+  @@index([action, createdAt])
+  @@map("admin_audit_logs")
+}
+
+model BroadcastMessage {
+  id               Int      @id @default(autoincrement())
+  senderUserId     Int
+  senderUser       User     @relation("BroadcastSender", fields: [senderUserId], references: [id], onDelete: Cascade)
+  targetGroup      String
+  title            String
+  body             String
+  previewToken     String?  @unique
+  previewHash      String?
+  previewCount     Int?
+  sentAt           DateTime?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([targetGroup, createdAt])
+  @@map("broadcast_messages")
+}
+
+model DictionaryUpload {
+  id                Int      @id @default(autoincrement())
+  dictionaryEntryId Int?
+  dictionaryEntry   DictionaryEntry? @relation(fields: [dictionaryEntryId], references: [id], onDelete: SetNull)
+  storageKey        String
+  contentType       String
+  kind              String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([dictionaryEntryId])
+  @@index([storageKey])
+  @@map("dictionary_uploads")
+}

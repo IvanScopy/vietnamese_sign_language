@@ -1,0 +1,61 @@
+{
+  "version": "1.0",
+  "timestamp": "2026-05-12T00:00:00+07:00",
+  "phase": "02",
+  "phase_name": "sign-recognition-mvp",
+  "phase_dir": ".planning/phases/02-sign-language-recognition",
+  "plan": null,
+  "task": "roadmap-reconciliation",
+  "total_tasks": null,
+  "status": "validation-pending",
+  "completed_tasks": [
+    {
+      "id": 1,
+      "name": "Phase 1 Foundation & Authentication",
+      "status": "done"
+    },
+    {
+      "id": 2,
+      "name": "Phase 2 Sign Recognition MVP implementation waves",
+      "status": "implemented"
+    },
+    {
+      "id": 3,
+      "name": "Roadmap reconciliation: defer avatar to v2+",
+      "status": "done"
+    }
+  ],
+  "remaining_tasks": [
+    {
+      "id": 4,
+      "name": "Decide whether to validate Phase 2 now or proceed to Phase 3 with validation gaps documented"
+    },
+    {
+      "id": 5,
+      "name": "Run $gsd-discuss-phase 3 for Face-to-Face Conversation & History"
+    }
+  ],
+  "blockers": [
+    {
+      "name": "Real VSL model sourcing",
+      "impact": "Blocks marking Phase 2 fully complete"
+    },
+    {
+      "name": "Physical mobile device validation",
+      "impact": "Blocks confidence in camera/MediaPipe/latency behavior"
+    }
+  ],
+  "human_actions_pending": [
+    "Confirm whether Phase 2 validation should be completed before starting Phase 3"
+  ],
+  "decisions": [
+    {
+      "decision": "3D avatar signing is deferred to v2+",
+      "rationale": "Avatar quality and VSL animation coverage are too risky for v1; v1 uses subtitles/text/TTS",
+      "phase": "all"
+    }
+  ],
+  "uncommitted_files": [],
+  "next_action": "Run: $gsd-discuss-phase 3 after the Phase 2 validation decision",
+  "context_notes": "ROADMAP.md, STATE.md, REQUIREMENTS.md, PROJECT.md, BRIEF.md, and stale next-phase references were reconciled on 2026-05-12. Avatar work must stay out of v1 unless roadmap scope changes."
+}

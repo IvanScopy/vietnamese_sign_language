@@ -1,2 +1,54 @@
 # Agent config (local only)
 .agent/
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# testing
+/coverage
+.pytest_cache/
+__pycache__/
+*.pyc
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# local env files
+.env*.local
+.env
+.claude/
+.backups/
+data/
+data-video12-5/
+demo_model/
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# prisma
+prisma/migrations/
+
+# ide
+.idea
+.vscode
+*.swp
+*.swo
